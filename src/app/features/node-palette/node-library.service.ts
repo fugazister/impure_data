@@ -1,4 +1,4 @@
-import { NodeType } from '../models/node.model';
+import { NodeType } from '../../core';
 
 export class NodeTypeLibrary {
   private static nodeTypes: Map<string, NodeType> = new Map();

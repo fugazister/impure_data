@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Project } from '../models/node.model';
+import { Project, Node, Connection, Port } from '../../core';
 
 @Injectable({
   providedIn: 'root'
@@ -179,19 +179,19 @@ export class ProjectManagerService {
     // Generate new IDs for all nodes and connections to avoid conflicts
     const nodeIdMap = new Map<string, string>();
     
-    duplicated.nodes = duplicated.nodes.map(node => {
+    duplicated.nodes = duplicated.nodes.map((node: Node) => {
       const newNodeId = this.generateId();
       nodeIdMap.set(node.id, newNodeId);
       
       return {
         ...node,
         id: newNodeId,
-        inputs: node.inputs.map(input => ({ ...input, id: this.generateId() })),
-        outputs: node.outputs.map(output => ({ ...output, id: this.generateId() }))
+        inputs: node.inputs.map((input: Port) => ({ ...input, id: this.generateId() })),
+        outputs: node.outputs.map((output: Port) => ({ ...output, id: this.generateId() }))
       };
     });
 
-    duplicated.connections = duplicated.connections.map(connection => ({
+    duplicated.connections = duplicated.connections.map((connection: Connection) => ({
       ...connection,
       id: this.generateId(),
       fromNodeId: nodeIdMap.get(connection.fromNodeId) || connection.fromNodeId,

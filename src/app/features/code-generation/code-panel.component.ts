@@ -1,8 +1,8 @@
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NodeEditorService } from '../services/node-editor.service';
-import { CodeGeneratorService, CodeGenerationResult } from '../services/code-generator.service';
-import { ProjectManagerService } from '../services/project-manager.service';
+import { NodeEditorService } from '../node-editor/node-editor.service';
+import { CodeGeneratorService, CodeGenerationResult } from './code-generator.service';
+import { ProjectManagerService } from '../project-management/project-manager.service';
 
 @Component({
   selector: 'app-code-panel',

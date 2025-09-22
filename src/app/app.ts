@@ -1,7 +1,7 @@
 import { Component, signal } from '@angular/core';
-import { NodeCanvasComponent } from './components/node-canvas.component';
-import { NodePaletteComponent } from './components/node-palette.component';
-import { CodePanelComponent } from './components/code-panel.component';
+import { NodeCanvasComponent } from './features/node-editor/node-canvas.component';
+import { NodePaletteComponent } from './features/node-palette/node-palette.component';
+import { CodePanelComponent } from './features/code-generation/code-panel.component';
 
 @Component({
   selector: 'app-root',

@@ -1,6 +1,6 @@
 import { Injectable, signal } from '@angular/core';
-import { Node, Connection, Project, Position } from '../models/node.model';
-import { NodeTypeLibrary } from './node-library.service';
+import { Node, Connection, Project, Position } from '../../core';
+import { NodeTypeLibrary } from '../node-palette/node-library.service';
 
 @Injectable({
   providedIn: 'root'

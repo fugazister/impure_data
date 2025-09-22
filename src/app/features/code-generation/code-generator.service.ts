@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { Node, Connection } from '../models/node.model';
-import { NodeTypeLibrary } from './node-library.service';
+import { Node, Connection, Port } from '../../core';
+import { NodeTypeLibrary } from '../node-palette/node-library.service';
 
 export interface CodeGenerationResult {
   success: boolean;
@@ -173,7 +173,7 @@ export class CodeGeneratorService {
   private getNodeInputValues(node: Node, connections: Connection[], nodeValues: Map<string, string>): any[] {
     const inputValues: any[] = [];
 
-    node.inputs.forEach((input, index) => {
+    node.inputs.forEach((input: Port, index: number) => {
       // Find connection to this input port
       const connection = connections.find(conn => 
         conn.toNodeId === node.id && conn.toPortId === input.id

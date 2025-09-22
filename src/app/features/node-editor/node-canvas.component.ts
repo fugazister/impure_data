@@ -1,8 +1,8 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NodeEditorService } from '../services/node-editor.service';
-import { NodeTypeLibrary } from '../services/node-library.service';
-import { Node, Connection, Position } from '../models/node.model';
+import { NodeEditorService } from './node-editor.service';
+import { NodeTypeLibrary } from '../node-palette/node-library.service';
+import { Node, Connection, Position } from '../../core';
 
 @Component({
   selector: 'app-node-canvas',

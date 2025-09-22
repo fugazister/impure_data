@@ -1,8 +1,8 @@
 import { Component, computed, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { NodeTypeLibrary } from '../services/node-library.service';
-import { NodeEditorService } from '../services/node-editor.service';
-import { NodeType } from '../models/node.model';
+import { NodeTypeLibrary } from './node-library.service';
+import { NodeEditorService } from '../node-editor/node-editor.service';
+import { NodeType } from '../../core';
 
 @Component({
   selector: 'app-node-palette',
