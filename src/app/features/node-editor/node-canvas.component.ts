@@ -62,8 +62,8 @@ import { Node, Connection, Position } from '../../core';
             <g 
               class="node"
               [class.selected]="selectedNode()?.id === node.id"
+              [class.editing]="editingNodeId() === node.id"
               [attr.transform]="'translate(' + node.position.x + ',' + node.position.y + ')'"
-              (mousedown)="onNodeMouseDown($event, node)"
             >
               <!-- Node background -->
               <rect
@@ -77,6 +77,34 @@ import { Node, Connection, Position } from '../../core';
                 stroke-width="1"
               />
               
+              <!-- Header area for moving (darker background) -->
+              <rect
+                class="node-header"
+                [attr.width]="getNodeWidth(node)"
+                height="30"
+                fill="rgba(0,0,0,0.2)"
+                rx="4"
+                ry="4"
+                stroke="none"
+                (mousedown)="onNodeHeaderMouseDown($event, node)"
+                style="cursor: move;"
+              />
+              
+              <!-- Body area for editing (only for function nodes) -->
+              @if (node && node.type === 'function') {
+                <rect
+                  class="node-body-edit-area"
+                  x="0"
+                  y="30"
+                  [attr.width]="getNodeWidth(node)"
+                  [attr.height]="getNodeHeight(node) - 30"
+                  fill="transparent"
+                  stroke="none"
+                  (click)="onNodeBodyClick($event, node)"
+                  style="cursor: text;"
+                />
+              }
+              
               <!-- Node title -->
               <text
                 class="node-title"
@@ -86,12 +114,40 @@ import { Node, Connection, Position } from '../../core';
                 font-family="Arial, sans-serif"
                 font-size="12"
                 font-weight="bold"
+                style="pointer-events: none;"
               >
                 {{ node.label || getNodeTypeName(node.type) }}
               </text>
               
+              <!-- Move handle indicator -->
+              <text
+                class="move-indicator"
+                [attr.x]="getNodeWidth(node) - 20"
+                y="20"
+                fill="rgba(255,255,255,0.6)"
+                font-family="Arial, sans-serif"
+                font-size="10"
+                style="pointer-events: none; user-select: none;"
+              >
+                ⋮⋮
+              </text>
+              
+              <!-- Edit hint for function nodes -->
+              @if (node && node.type === 'function' && editingNodeId() !== node.id) {
+                <text
+                  x="8"
+                  [attr.y]="getNodeHeight(node) - 5"
+                  fill="rgba(156, 39, 176, 0.7)"
+                  font-family="Arial, sans-serif"
+                  font-size="8"
+                  style="pointer-events: none; user-select: none;"
+                >
+                  Click body to edit
+                </text>
+              }
+              
               <!-- Input ports -->
-              @for (input of node.inputs; track input.id; let i = $index) {
+              @for (input of (node.inputs || []); track input.id; let i = $index) {
                 <g class="port input-port" [attr.transform]="'translate(0,' + (35 + i * 20) + ')'">
                   <circle
                     [attr.cx]="0"
@@ -116,7 +172,7 @@ import { Node, Connection, Position } from '../../core';
               }
               
               <!-- Output ports -->
-              @for (output of node.outputs; track output.id; let i = $index) {
+              @for (output of (node.outputs || []); track output.id; let i = $index) {
                 <g class="port output-port" [attr.transform]="'translate(' + getNodeWidth(node) + ',' + (35 + i * 20) + ')'">
                   <circle
                     [attr.cx]="0"
@@ -139,6 +195,42 @@ import { Node, Connection, Position } from '../../core';
                     {{ output.label }}
                   </text>
                 </g>
+              }
+              
+              <!-- Inline Code Editor for Function Nodes -->
+              @if (node && node.type === 'function' && editingNodeId() === node.id) {
+                <foreignObject 
+                  x="8" 
+                  [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 10"
+                  [attr.width]="getNodeWidth(node) - 16" 
+                  [attr.height]="120"
+                >
+                  <textarea
+                    #codeEditor
+                    class="code-editor"
+                    [value]="node.customCode || '// Your function code here\\nreturn arg1;'"
+                    (input)="onCodeChange($event, node.id)"
+                    (blur)="onEditorBlur($event)"
+                    (keydown)="onCodeEditorKeyDown($event)"
+                    (click)="$event.stopPropagation()"
+                    placeholder="// Your function code here&#10;return arg1;"
+                    autofocus
+                  ></textarea>
+                </foreignObject>
+              }
+              
+              <!-- Function Code Preview (when not editing) -->
+              @if (node && node.type === 'function' && editingNodeId() !== node.id && node.customCode) {
+                <text
+                  x="8"
+                  [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 15"
+                  fill="#666"
+                  font-family="Monaco, Consolas, monospace"
+                  font-size="9"
+                  style="pointer-events: none; user-select: none;"
+                >
+                  {{ getCodePreview(node.customCode) }}
+                </text>
               }
             </g>
           }
@@ -178,7 +270,7 @@ import { Node, Connection, Position } from '../../core';
     }
     
     .node {
-      cursor: move;
+      cursor: default;
     }
     
     .node.selected .node-background {
@@ -186,8 +278,55 @@ import { Node, Connection, Position } from '../../core';
       stroke-width: 2;
     }
     
+    .node.editing .node-background {
+      stroke: #9C27B0;
+      stroke-width: 2;
+      stroke-dasharray: 5,5;
+    }
+    
+    .node.editing .node-header {
+      fill: rgba(156, 39, 176, 0.3) !important;
+    }
+    
     .node-background {
       filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.2));
+    }
+    
+    .node-header {
+      cursor: move !important;
+      transition: all 0.2s ease;
+    }
+    
+    .node-header:hover {
+      fill: rgba(0,0,0,0.3) !important;
+      stroke: rgba(255, 255, 255, 0.3);
+      stroke-width: 1;
+    }
+    
+    .node-body-edit-area {
+      cursor: text !important;
+      transition: all 0.2s ease;
+      fill: rgba(33, 150, 243, 0.05);
+    }
+    
+    .node-body-edit-area:hover {
+      fill: rgba(156, 39, 176, 0.15) !important;
+      stroke: rgba(156, 39, 176, 0.4);
+      stroke-width: 1;
+    }
+    
+    .node-title {
+      pointer-events: none;
+      user-select: none;
+    }
+    
+    .move-indicator {
+      opacity: 0.6;
+      transition: opacity 0.2s ease;
+    }
+    
+    .node-group:hover .move-indicator {
+      opacity: 1;
     }
     
     .port circle {
@@ -248,6 +387,26 @@ import { Node, Connection, Position } from '../../core';
     .context-menu-item .label {
       font-weight: 500;
     }
+    
+    .code-editor {
+      width: 100%;
+      height: 100%;
+      border: 1px solid #4a5568;
+      border-radius: 4px;
+      background: #1a202c;
+      color: #e2e8f0;
+      font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+      font-size: 11px;
+      padding: 8px;
+      resize: none;
+      outline: none;
+      line-height: 1.4;
+    }
+    
+    .code-editor:focus {
+      border-color: #9C27B0;
+      box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.2);
+    }
   `]
 })
 export class NodeCanvasComponent implements AfterViewInit {
@@ -270,6 +429,8 @@ export class NodeCanvasComponent implements AfterViewInit {
     x: 0,
     y: 0
   });
+  
+  editingNodeId = signal<string | null>(null);
   
   dragConnection = signal<{
     fromNodeId: string;
@@ -403,40 +564,121 @@ export class NodeCanvasComponent implements AfterViewInit {
     // Create a new function node using the service
     const functionNode = this.nodeEditor.addNode('function', canvasPosition);
     
-    // Update the node with custom properties
-    functionNode.label = 'Custom Function';
-    functionNode.customCode = '// Your function code here\nreturn arg1;';
-    
-    // Update inputs and outputs for function signature
-    functionNode.inputs = [
-      {
-        id: this.generateId(),
-        type: 'input',
-        dataType: 'any',
-        label: 'arg1',
-        connected: false
-      }
-    ];
-    
-    functionNode.outputs = [
-      {
-        id: this.generateId(),
-        type: 'output',
-        dataType: 'any',
-        label: 'result',
-        connected: false
-      }
-    ];
+    // Update the node with all custom properties at once
+    this.nodeEditor.updateNode(functionNode.id, {
+      label: 'Custom Function',
+      customCode: '// Your function code here\nreturn arg1;',
+      inputs: [
+        {
+          id: this.generateId(),
+          type: 'input',
+          dataType: 'any',
+          label: 'arg1',
+          connected: false
+        }
+      ],
+      outputs: [
+        {
+          id: this.generateId(),
+          type: 'output',
+          dataType: 'any',
+          label: 'result',
+          connected: false
+        }
+      ]
+    });
 
     this.hideContextMenu();
+    
+    // Automatically start editing the new function node after ensuring DOM update
+    setTimeout(() => {
+      this.startEditing(functionNode.id);
+    }, 20);
   }
 
   private generateId(): string {
     return Math.random().toString(36).substr(2, 9);
   }
 
+  // Safe helper for template calculations
+  public safeMax(a: number, b: number): number {
+    if (typeof a !== 'number' || isNaN(a)) a = 0;
+    if (typeof b !== 'number' || isNaN(b)) b = 0;
+    return Math.max(a, b);
+  }
+
+  public getPortsLength(ports: any[]): number {
+    return Array.isArray(ports) ? ports.length : 0;
+  }
+
+  // Code editing methods
+  startEditing(nodeId: string): void {
+    this.editingNodeId.set(nodeId);
+    
+    // Use requestAnimationFrame to ensure DOM is fully rendered
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const textarea = document.querySelector('.code-editor') as HTMLTextAreaElement;
+        if (textarea) {
+          textarea.focus();
+          // Place cursor at the end
+          textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        }
+      });
+    });
+  }
+
+  finishEditing(): void {
+    this.editingNodeId.set(null);
+  }
+
+  onEditorBlur(event: FocusEvent): void {
+    // Add a small delay to prevent immediate blur when first focusing
+    setTimeout(() => {
+      // Only finish editing if the user actually clicked outside
+      if (document.activeElement !== event.target) {
+        this.finishEditing();
+      }
+    }, 100);
+  }
+
+  onCodeChange(event: Event, nodeId: string): void {
+    const textarea = event.target as HTMLTextAreaElement;
+    this.nodeEditor.updateNode(nodeId, { customCode: textarea.value });
+  }
+
+  onCodeEditorKeyDown(event: KeyboardEvent): void {
+    // Handle Escape to finish editing
+    if (event.key === 'Escape') {
+      this.finishEditing();
+      event.preventDefault();
+    }
+    // Handle Tab for indentation
+    else if (event.key === 'Tab') {
+      event.preventDefault();
+      const textarea = event.target as HTMLTextAreaElement;
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      
+      // Insert tab character
+      textarea.value = textarea.value.substring(0, start) + '  ' + textarea.value.substring(end);
+      
+      // Move cursor
+      textarea.selectionStart = textarea.selectionEnd = start + 2;
+      
+      // Trigger change event
+      textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    }
+  }
+
+  getCodePreview(code: string): string {
+    if (!code) return 'Double-click to edit';
+    const firstLine = code.split('\n')[0].trim();
+    return firstLine.length > 25 ? firstLine.substring(0, 25) + '...' : firstLine;
+  }
+
   // Node events
-  onNodeMouseDown(event: MouseEvent, node: Node) {
+  onNodeHeaderMouseDown(event: MouseEvent, node: Node) {
     event.stopPropagation();
     this.nodeEditor.selectNode(node.id);
     this.isDraggingNode.set(true);
@@ -447,6 +689,21 @@ export class NodeCanvasComponent implements AfterViewInit {
       x: event.clientX - svgRect.left,
       y: event.clientY - svgRect.top
     });
+  }
+
+  onNodeBodyClick(event: MouseEvent, node: Node) {
+    event.stopPropagation();
+    if (node.type === 'function') {
+      this.nodeEditor.selectNode(node.id);
+      this.startEditing(node.id);
+    }
+  }
+
+  // Legacy method - keeping for compatibility with ports
+  onNodeMouseDown(event: MouseEvent, node: Node) {
+    // This will be used for ports and other node interactions
+    event.stopPropagation();
+    this.nodeEditor.selectNode(node.id);
   }
 
   // Port events
@@ -505,11 +762,21 @@ export class NodeCanvasComponent implements AfterViewInit {
   }
 
   getNodeWidth(node: Node): number {
-    return Math.max(120, Math.max(node.inputs.length, node.outputs.length) * 80 + 40);
+    if (!node) return 120;
+    return Math.max(120, this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 80 + 40);
   }
 
   getNodeHeight(node: Node): number {
-    return 30 + Math.max(node.inputs.length, node.outputs.length) * 20 + 10;
+    if (!node) return 60;
+    const baseHeight = 30 + this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 20 + 10;
+    
+    // Add extra height for function nodes to accommodate code editor or preview
+    if (node.type === 'function') {
+      const isEditing = this.editingNodeId() === node.id;
+      return baseHeight + (isEditing ? 130 : 25); // 130 for editor, 25 for preview
+    }
+    
+    return baseHeight;
   }
 
   getNodeColor(node: Node): string {

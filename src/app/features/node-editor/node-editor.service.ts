@@ -94,6 +94,15 @@ export class NodeEditorService {
     this.updateProject();
   }
 
+  updateNode(nodeId: string, updates: Partial<Node>): void {
+    const currentNodes = this.nodes();
+    const updatedNodes = currentNodes.map(node => 
+      node.id === nodeId ? { ...node, ...updates } : node
+    );
+    this.nodes.set(updatedNodes);
+    this.updateProject();
+  }
+
   // Connection operations
   addConnection(fromNodeId: string, fromPortId: string, toNodeId: string, toPortId: string): Connection {
     // Check if connection already exists
