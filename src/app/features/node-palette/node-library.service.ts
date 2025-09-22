@@ -248,6 +248,26 @@ export class NodeTypeLibrary {
   }
 
   private static registerFunctionNodes(): void {
+    // User-defined function
+    this.registerNodeType({
+      id: 'function',
+      category: 'function',
+      name: 'Custom Function',
+      description: 'User-defined function block',
+      defaultInputs: [
+        { type: 'input', dataType: 'any', label: 'arg1' }
+      ],
+      defaultOutputs: [
+        { type: 'output', dataType: 'any', label: 'result' }
+      ],
+      generator: (inputs, config) => {
+        const customCode = config?.customCode || 'return arg1;';
+        const args = inputs.map((input, index) => `arg${index + 1}: ${input || 'undefined'}`).join(', ');
+        return `((${args}) => {\n${customCode}\n})(${inputs.join(', ')})`;
+      },
+      color: '#9C27B0'
+    });
+
     // Function call
     this.registerNodeType({
       id: 'function.call',

@@ -19,6 +19,7 @@ import { Node, Connection, Position } from '../../core';
         (mousemove)="onCanvasMouseMove($event)"
         (mouseup)="onCanvasMouseUp($event)"
         (wheel)="onCanvasWheel($event)"
+        (contextmenu)="onCanvasRightClick($event)"
       >
         <!-- Grid background -->
         <defs>
@@ -143,6 +144,20 @@ import { Node, Connection, Position } from '../../core';
           }
         </g>
       </svg>
+      
+      <!-- Context Menu -->
+      @if (contextMenu().visible) {
+        <div 
+          class="context-menu"
+          [style.left.px]="contextMenu().x"
+          [style.top.px]="contextMenu().y"
+        >
+          <div class="context-menu-item" (click)="createFunctionNode()">
+            <span class="icon">⚡</span>
+            <span class="label">Function Block</span>
+          </div>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -199,6 +214,40 @@ import { Node, Connection, Position } from '../../core';
     .connection-line.dragging {
       pointer-events: none;
     }
+    
+    .context-menu {
+      position: absolute;
+      background: #2d3748;
+      border: 1px solid #4a5568;
+      border-radius: 6px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      z-index: 1000;
+      min-width: 180px;
+      overflow: hidden;
+    }
+    
+    .context-menu-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 16px;
+      color: #e2e8f0;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s ease;
+    }
+    
+    .context-menu-item:hover {
+      background: #4a5568;
+    }
+    
+    .context-menu-item .icon {
+      margin-right: 12px;
+      font-size: 16px;
+    }
+    
+    .context-menu-item .label {
+      font-weight: 500;
+    }
   `]
 })
 export class NodeCanvasComponent implements AfterViewInit {
@@ -211,6 +260,16 @@ export class NodeCanvasComponent implements AfterViewInit {
   private isDraggingNode = signal(false);
   private dragStartPosition = signal<Position>({ x: 0, y: 0 });
   private draggedNodeId = signal<string | null>(null);
+  
+  contextMenu = signal<{
+    visible: boolean;
+    x: number;
+    y: number;
+  }>({
+    visible: false,
+    x: 0,
+    y: 0
+  });
   
   dragConnection = signal<{
     fromNodeId: string;
@@ -248,6 +307,8 @@ export class NodeCanvasComponent implements AfterViewInit {
 
   // Canvas events
   onCanvasMouseDown(event: MouseEvent) {
+    this.hideContextMenu(); // Hide context menu on any click
+    
     if (event.target === this.canvasSvg.nativeElement || (event.target as Element).classList.contains('grid')) {
       this.isDraggingCanvas.set(true);
       this.dragStartPosition.set({ x: event.clientX, y: event.clientY });
@@ -310,6 +371,68 @@ export class NodeCanvasComponent implements AfterViewInit {
     const zoomFactor = event.deltaY > 0 ? 0.9 : 1.1;
     const currentZoom = this.nodeEditor.getZoom();
     this.nodeEditor.setZoom(currentZoom * zoomFactor);
+  }
+
+  onCanvasRightClick(event: MouseEvent) {
+    event.preventDefault();
+    this.hideContextMenu(); // Hide any existing menu
+    
+    const rect = this.canvasSvg.nativeElement.getBoundingClientRect();
+    this.contextMenu.set({
+      visible: true,
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top
+    });
+  }
+
+  hideContextMenu() {
+    this.contextMenu.set({
+      visible: false,
+      x: 0,
+      y: 0
+    });
+  }
+
+  createFunctionNode() {
+    const menu = this.contextMenu();
+    if (!menu.visible) return;
+
+    // Convert screen coordinates to canvas coordinates
+    const canvasPosition = this.screenToCanvas({ x: menu.x, y: menu.y });
+    
+    // Create a new function node using the service
+    const functionNode = this.nodeEditor.addNode('function', canvasPosition);
+    
+    // Update the node with custom properties
+    functionNode.label = 'Custom Function';
+    functionNode.customCode = '// Your function code here\nreturn arg1;';
+    
+    // Update inputs and outputs for function signature
+    functionNode.inputs = [
+      {
+        id: this.generateId(),
+        type: 'input',
+        dataType: 'any',
+        label: 'arg1',
+        connected: false
+      }
+    ];
+    
+    functionNode.outputs = [
+      {
+        id: this.generateId(),
+        type: 'output',
+        dataType: 'any',
+        label: 'result',
+        connected: false
+      }
+    ];
+
+    this.hideContextMenu();
+  }
+
+  private generateId(): string {
+    return Math.random().toString(36).substr(2, 9);
   }
 
   // Node events

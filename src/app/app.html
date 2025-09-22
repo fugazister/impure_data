@@ -1,56 +1,20 @@
 <div class="app-container">
-  <!-- Header -->
-  <header class="app-header">
-    <div class="header-left">
-      <h1 class="app-title">{{ title() }}</h1>
-    </div>
-    
-    <div class="header-center">
-      <div class="toolbar">
-        <button class="toolbar-btn" title="New Project">
-          📄 New
-        </button>
-        <button class="toolbar-btn" title="Save Project">
-          💾 Save
-        </button>
-        <button class="toolbar-btn" title="Load Project">
-          📁 Open
-        </button>
-        <div class="separator"></div>
-        <button class="toolbar-btn" title="Zoom In">
-          🔍+
-        </button>
-        <button class="toolbar-btn" title="Zoom Out">
-          🔍-
-        </button>
-        <button class="toolbar-btn" title="Reset View">
-          🎯 Reset
-        </button>
-      </div>
-    </div>
-    
-    <div class="header-right">
-      <div class="project-info">
-        <span class="project-name">Untitled Project</span>
-      </div>
-    </div>
-  </header>
-
   <!-- Main Content -->
   <main class="app-main">
-    <!-- Node Palette -->
-    <aside class="palette-container">
-      <app-node-palette></app-node-palette>
-    </aside>
-    
     <!-- Canvas Area -->
     <section class="canvas-container">
       <app-node-canvas></app-node-canvas>
     </section>
     
-    <!-- Code Panel -->
-    <aside class="code-container">
-      <app-code-panel></app-code-panel>
+    <!-- Code Panel - Collapsed by default -->
+    <aside class="code-container" [class.collapsed]="!codeHelpVisible()">
+      <div class="code-panel-toggle" (click)="toggleCodeHelp()">
+        <span class="toggle-icon">{{ codeHelpVisible() ? '▼' : '▲' }}</span>
+        <span class="toggle-label">Code & Output</span>
+      </div>
+      <div class="code-panel-content" [class.hidden]="!codeHelpVisible()">
+        <app-code-panel></app-code-panel>
+      </div>
     </aside>
   </main>
 </div>
