@@ -209,40 +209,28 @@ import { Node, Connection, Position } from '../../core';
                 </g>
               }
               
-              <!-- Inline Code Editor for Function Nodes -->
-              @if (node && node.type === 'function' && editingNodeId() === node.id) {
+              <!-- Code Editor for Function Nodes (always visible) -->
+              @if (node && node.type === 'function') {
                 <foreignObject 
                   x="8" 
                   [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 10"
                   [attr.width]="getNodeWidth(node) - 16" 
-                  [attr.height]="120"
+                  [attr.height]="editingNodeId() === node.id ? 120 : 60"
                 >
                   <textarea
                     #codeEditor
                     class="code-editor"
-                    [value]="node.customCode || '// Your function code here\\nreturn arg1;'"
+                    [class.editing]="editingNodeId() === node.id"
+                    [value]="node.customCode || ''"
                     (input)="onCodeChange($event, node.id)"
                     (blur)="onEditorBlur($event)"
                     (keydown)="onCodeEditorKeyDown($event)"
                     (click)="$event.stopPropagation()"
-                    placeholder="// Your function code here&#10;return arg1;"
-                    autofocus
+                    [readonly]="editingNodeId() !== node.id"
+                    placeholder=""
+                    [attr.autofocus]="editingNodeId() === node.id ? true : null"
                   ></textarea>
                 </foreignObject>
-              }
-              
-              <!-- Function Code Preview (when not editing) -->
-              @if (node && node.type === 'function' && editingNodeId() !== node.id && node.customCode) {
-                <text
-                  x="8"
-                  [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 15"
-                  fill="#666"
-                  font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
-                  font-size="9"
-                  style="pointer-events: none; user-select: none;"
-                >
-                  {{ getCodePreview(node.customCode) }}
-                </text>
               }
             </g>
           }
@@ -413,6 +401,20 @@ import { Node, Connection, Position } from '../../core';
       resize: none;
       outline: none;
       line-height: 1.4;
+      min-height: 20px;
+      overflow: hidden;
+    }
+    
+    .code-editor.editing {
+      height: 100%;
+      overflow: auto;
+    }
+    
+    .code-editor[readonly] {
+      background: #2d3748;
+      border-color: #4a5568;
+      cursor: default;
+      opacity: 0.9;
     }
     
     .code-editor:focus {
@@ -671,7 +673,7 @@ export class NodeCanvasComponent implements AfterViewInit {
     // Update the node with all custom properties at once
     this.nodeEditor.updateNode(functionNode.id, {
       label: 'Custom Function',
-      customCode: '// Your function code here\nreturn arg1;',
+      customCode: '',
       inputs: [
         {
           id: this.generateId(),

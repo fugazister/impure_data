@@ -22,15 +22,9 @@
       <app-node-canvas></app-node-canvas>
     </section>
     
-    <!-- Code Panel - Collapsed by default -->
-    <aside class="code-container" [class.collapsed]="!codeHelpVisible()">
-      <div class="code-panel-toggle" (click)="toggleCodeHelp()">
-        <span class="toggle-icon">{{ codeHelpVisible() ? '▼' : '▲' }}</span>
-        <span class="toggle-label">Code & Output</span>
-      </div>
-      <div class="code-panel-content" [class.hidden]="!codeHelpVisible()">
-        <app-code-panel></app-code-panel>
-      </div>
+    <!-- Code Panel - Only show when there's output or errors -->
+    <aside class="code-container" [class.hidden]="!showCodePanel()">
+      <app-code-panel #codePanel></app-code-panel>
     </aside>
   </main>
 </div>

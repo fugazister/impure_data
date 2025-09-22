@@ -1,147 +1,37 @@
 <div class="code-panel">
   <div class="panel-header">
-    <div class="panel-tabs">
-      <button 
-        class="tab-button"
-        [class.active]="activeTab() === 'code'"
-        (click)="setActiveTab('code')"
-      >
-        Generated Code
-      </button>
-      <button 
-        class="tab-button"
-        [class.active]="activeTab() === 'output'"
-        (click)="setActiveTab('output')"
-      >
-        Output
-      </button>
-      <button 
-        class="tab-button"
-        [class.active]="activeTab() === 'errors'"
-        (click)="setActiveTab('errors')"
-        [class.has-errors]="generationResult().errors.length > 0"
-      >
-        Errors ({{ generationResult().errors.length }})
-      </button>
-    </div>
-    
-    <div class="panel-actions">
-      <button 
-        class="action-button"
-        (click)="regenerateCode()"
-        title="Regenerate Code"
-      >
-        🔄
-      </button>
-      <button 
-        class="action-button"
-        (click)="executeCode()"
-        [disabled]="!generationResult().success"
-        title="Execute Code"
-      >
-        ▶️
-      </button>
-      <button 
-        class="action-button"
-        (click)="exportCode()"
-        [disabled]="!generationResult().success"
-        title="Export as .js file"
-      >
-        💾
-      </button>
-      <button 
-        class="action-button"
-        (click)="copyCode()"
-        [disabled]="!generationResult().success"
-        title="Copy to Clipboard"
-      >
-        📋
-      </button>
-    </div>
+    <span class="panel-title">Output</span>
   </div>
   
   <div class="panel-content">
-    @if (activeTab() === 'code') {
-      <div class="code-tab">
-        @if (generationResult().success) {
-          <pre class="code-block"><code [innerHTML]="highlightedCode()"></code></pre>
-        } @else {
-          <div class="error-message">
-            <h4>Code Generation Failed</h4>
-            <ul>
-              @for (error of generationResult().errors; track error) {
-                <li>{{ error }}</li>
-              }
-            </ul>
-          </div>
+    @if (executionOutput().length > 0) {
+      <div class="output-section">
+        @for (output of executionOutput(); track $index) {
+          <div class="output-line">{{ formatOutput(output) }}</div>
         }
       </div>
     }
     
-    @if (activeTab() === 'output') {
-      <div class="output-tab">
-        <div class="output-header">
-          <span>Execution Output</span>
-          <button 
-            class="action-button small"
-            (click)="clearOutput()"
-            title="Clear Output"
-          >
-            🗑️
-          </button>
-        </div>
-        <div class="output-content">
-          @if (executionOutput().length === 0) {
-            <div class="no-output">No output yet. Execute the code to see results.</div>
-          } @else {
-            @for (output of executionOutput(); track $index) {
-              <div class="output-line">
-                <span class="output-index">{{ $index + 1 }}.</span>
-                <span class="output-value">{{ formatOutput(output) }}</span>
-              </div>
-            }
-          }
-        </div>
-      </div>
-    }
-    
-    @if (activeTab() === 'errors') {
-      <div class="errors-tab">
-        @if (generationResult().errors.length === 0 && executionErrors().length === 0) {
-          <div class="no-errors">✅ No errors found!</div>
-        } @else {
-          @if (generationResult().errors.length > 0) {
-            <div class="error-section">
-              <h4>Code Generation Errors</h4>
-              <ul>
-                @for (error of generationResult().errors; track error) {
-                  <li class="error-item">{{ error }}</li>
-                }
-              </ul>
-            </div>
-          }
-          
-          @if (executionErrors().length > 0) {
-            <div class="error-section">
-              <h4>Execution Errors</h4>
-              <ul>
-                @for (error of executionErrors(); track error) {
-                  <li class="error-item">{{ error }}</li>
-                }
-              </ul>
-            </div>
+    @if (hasErrors()) {
+      <div class="error-section">
+        @if (generationResult().errors.length > 0) {
+          @for (error of generationResult().errors; track error) {
+            <div class="error-line">Error: {{ error }}</div>
           }
         }
         
-        @if (generationResult().warnings.length > 0) {
-          <div class="warning-section">
-            <h4>Warnings</h4>
-            <ul>
-              @for (warning of generationResult().warnings; track warning) {
-                <li class="warning-item">{{ warning }}</li>
-              }
-            </ul>
-          </div>
+        @if (executionErrors().length > 0) {
+          @for (error of executionErrors(); track error) {
+            <div class="error-line">Runtime Error: {{ error }}</div>
+          }
+        }
+      </div>
+    }
+    
+    @if (generationResult().warnings.length > 0) {
+      <div class="warning-section">
+        @for (warning of generationResult().warnings; track warning) {
+          <div class="warning-line">Warning: {{ warning }}</div>
         }
       </div>
     }
