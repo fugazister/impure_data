@@ -893,10 +893,10 @@ export class NodeCanvasComponent implements AfterViewInit {
     if (!node) return 60;
     const baseHeight = 30 + this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 20 + 10;
     
-    // Add extra height for function nodes to accommodate code editor or preview
+    // Add extra height for function nodes to accommodate always-visible code editor
     if (node.type === 'function') {
       const isEditing = this.editingNodeId() === node.id;
-      return baseHeight + (isEditing ? 130 : 25); // 130 for editor, 25 for preview
+      return baseHeight + (isEditing ? 130 : 70); // 130 for editing, 70 for read-only
     }
     
     return baseHeight;
