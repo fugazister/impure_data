@@ -3,6 +3,22 @@
   <main class="app-main">
     <!-- Canvas Area -->
     <section class="canvas-container">
+      <!-- Mode Toggle Switch -->
+      <div class="mode-switch-container">
+        <div class="mode-switch">
+          <span class="mode-label" [class.active]="isEditMode()">Edit</span>
+          <div class="toggle-switch" (click)="toggleMode()">
+            <div class="toggle-slider" [class.execution]="!isEditMode()"></div>
+          </div>
+          <span class="mode-label" [class.active]="!isEditMode()">Execute</span>
+        </div>
+        <div class="mode-status">
+          <span class="status-indicator" [class.edit]="isEditMode()" [class.execution]="!isEditMode()">
+            {{ isEditMode() ? 'EDIT MODE' : 'EXECUTION MODE' }}
+          </span>
+        </div>
+      </div>
+      
       <app-node-canvas></app-node-canvas>
     </section>
     

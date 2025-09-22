@@ -23,10 +23,14 @@ export class NodeEditorService {
   private dragOffset = signal<Position>({ x: 0, y: 0 });
   private canvasOffset = signal<Position>({ x: 0, y: 0 });
   private zoom = signal<number>(1);
+  
+  // Mode management - true for edit mode, false for execution mode
+  private editorMode = signal<'edit' | 'execution'>('edit');
 
   readonly nodes = signal<Node[]>([]);
   readonly connections = signal<Connection[]>([]);
   readonly selectedNode = signal<Node | null>(null);
+  readonly currentMode = this.editorMode.asReadonly();
 
   constructor() {
     NodeTypeLibrary.initialize();
@@ -229,5 +233,23 @@ export class NodeEditorService {
     } else {
       return this.connections().some(conn => conn.fromNodeId === nodeId && conn.fromPortId === portId);
     }
+  }
+
+  // Mode management methods
+  setMode(mode: 'edit' | 'execution'): void {
+    this.editorMode.set(mode);
+  }
+
+  isEditMode(): boolean {
+    return this.editorMode() === 'edit';
+  }
+
+  isExecutionMode(): boolean {
+    return this.editorMode() === 'execution';
+  }
+
+  toggleMode(): void {
+    const currentMode = this.editorMode();
+    this.setMode(currentMode === 'edit' ? 'execution' : 'edit');
   }
 }

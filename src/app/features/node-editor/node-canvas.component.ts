@@ -9,7 +9,18 @@ import { Node, Connection, Position } from '../../core';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="canvas-container" #canvasContainer>
+    <div class="canvas-container" #canvasContainer [class.execution-mode]="!nodeEditor.isEditMode()">
+      <!-- Execution Mode Overlay -->
+      @if (!nodeEditor.isEditMode()) {
+        <div class="execution-overlay">
+          <div class="execution-indicator">
+            <span class="execution-icon">⚡</span>
+            <span class="execution-text">EXECUTION MODE</span>
+            <span class="execution-subtitle">Read-only - editing disabled</span>
+          </div>
+        </div>
+      }
+      
       <svg 
         class="canvas-svg"
         #canvasSvg
@@ -63,6 +74,7 @@ import { Node, Connection, Position } from '../../core';
               class="node"
               [class.selected]="selectedNode()?.id === node.id"
               [class.editing]="editingNodeId() === node.id"
+              [class.execution-mode]="!nodeEditor.isEditMode()"
               [attr.transform]="'translate(' + node.position.x + ',' + node.position.y + ')'"
             >
               <!-- Node background -->
@@ -111,7 +123,7 @@ import { Node, Connection, Position } from '../../core';
                 x="8"
                 y="20"
                 fill="white"
-                font-family="Arial, sans-serif"
+                font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
                 font-size="12"
                 font-weight="bold"
                 style="pointer-events: none;"
@@ -125,7 +137,7 @@ import { Node, Connection, Position } from '../../core';
                 [attr.x]="getNodeWidth(node) - 20"
                 y="20"
                 fill="rgba(255,255,255,0.6)"
-                font-family="Arial, sans-serif"
+                font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
                 font-size="10"
                 style="pointer-events: none; user-select: none;"
               >
@@ -138,7 +150,7 @@ import { Node, Connection, Position } from '../../core';
                   x="8"
                   [attr.y]="getNodeHeight(node) - 5"
                   fill="rgba(156, 39, 176, 0.7)"
-                  font-family="Arial, sans-serif"
+                  font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
                   font-size="8"
                   style="pointer-events: none; user-select: none;"
                 >
@@ -163,7 +175,7 @@ import { Node, Connection, Position } from '../../core';
                     x="8"
                     y="3"
                     fill="#333"
-                    font-family="Arial, sans-serif"
+                    font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
                     font-size="10"
                   >
                     {{ input.label }}
@@ -188,7 +200,7 @@ import { Node, Connection, Position } from '../../core';
                     [attr.x]="-8"
                     y="3"
                     fill="#333"
-                    font-family="Arial, sans-serif"
+                    font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
                     font-size="10"
                     text-anchor="end"
                   >
@@ -225,7 +237,7 @@ import { Node, Connection, Position } from '../../core';
                   x="8"
                   [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 15"
                   fill="#666"
-                  font-family="Monaco, Consolas, monospace"
+                  font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
                   font-size="9"
                   style="pointer-events: none; user-select: none;"
                 >
@@ -395,7 +407,7 @@ import { Node, Connection, Position } from '../../core';
       border-radius: 4px;
       background: #1a202c;
       color: #e2e8f0;
-      font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
       font-size: 11px;
       padding: 8px;
       resize: none;
@@ -406,6 +418,86 @@ import { Node, Connection, Position } from '../../core';
     .code-editor:focus {
       border-color: #9C27B0;
       box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.2);
+    }
+    
+    /* Execution Mode Styles */
+    .canvas-container.execution-mode {
+      position: relative;
+    }
+    
+    .execution-overlay {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      z-index: 500;
+      pointer-events: none;
+    }
+    
+    .execution-indicator {
+      background: rgba(255, 87, 34, 0.9);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 87, 34, 0.5);
+      box-shadow: 0 4px 12px rgba(255, 87, 34, 0.3);
+    }
+    
+    .execution-icon {
+      font-size: 16px;
+      animation: pulse 2s infinite;
+    }
+    
+    .execution-text {
+      font-weight: 600;
+      font-size: 12px;
+      letter-spacing: 0.5px;
+    }
+    
+    .execution-subtitle {
+      font-size: 10px;
+      opacity: 0.8;
+      margin-left: 8px;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+    
+    /* Node styling in execution mode */
+    .node.execution-mode .node-background {
+      stroke: rgba(255, 87, 34, 0.5);
+      stroke-width: 1;
+      filter: drop-shadow(0 0 4px rgba(255, 87, 34, 0.2));
+    }
+    
+    .node.execution-mode .node-header {
+      cursor: default !important;
+      opacity: 0.8;
+    }
+    
+    .node.execution-mode .node-body-edit-area {
+      cursor: default !important;
+      opacity: 0.8;
+    }
+    
+    .node.execution-mode .move-indicator {
+      opacity: 0.3;
+    }
+    
+    /* Disable hover effects in execution mode */
+    .canvas-container.execution-mode .node-header:hover {
+      fill: inherit !important;
+      stroke: none !important;
+    }
+    
+    .canvas-container.execution-mode .node-body-edit-area:hover {
+      fill: inherit !important;
+      stroke: none !important;
     }
   `]
 })
@@ -451,7 +543,7 @@ export class NodeCanvasComponent implements AfterViewInit {
     return `translate(${offset.x}, ${offset.y}) scale(${zoom})`;
   });
 
-  constructor(private nodeEditor: NodeEditorService) {}
+  constructor(public nodeEditor: NodeEditorService) {}
 
   ngAfterViewInit() {
     this.updateCanvasSize();
@@ -536,6 +628,12 @@ export class NodeCanvasComponent implements AfterViewInit {
 
   onCanvasRightClick(event: MouseEvent) {
     event.preventDefault();
+    
+    // Only show context menu in edit mode
+    if (!this.nodeEditor.isEditMode()) {
+      return;
+    }
+    
     this.hideContextMenu(); // Hide any existing menu
     
     const rect = this.canvasSvg.nativeElement.getBoundingClientRect();
@@ -555,6 +653,12 @@ export class NodeCanvasComponent implements AfterViewInit {
   }
 
   createFunctionNode() {
+    // Only allow node creation in edit mode
+    if (!this.nodeEditor.isEditMode()) {
+      this.hideContextMenu();
+      return;
+    }
+    
     const menu = this.contextMenu();
     if (!menu.visible) return;
 
@@ -613,6 +717,11 @@ export class NodeCanvasComponent implements AfterViewInit {
 
   // Code editing methods
   startEditing(nodeId: string): void {
+    // Only allow editing in edit mode
+    if (!this.nodeEditor.isEditMode()) {
+      return;
+    }
+    
     this.editingNodeId.set(nodeId);
     
     // Use requestAnimationFrame to ensure DOM is fully rendered
@@ -680,6 +789,12 @@ export class NodeCanvasComponent implements AfterViewInit {
   // Node events
   onNodeHeaderMouseDown(event: MouseEvent, node: Node) {
     event.stopPropagation();
+    
+    // Only allow moving nodes in edit mode
+    if (!this.nodeEditor.isEditMode()) {
+      return;
+    }
+    
     this.nodeEditor.selectNode(node.id);
     this.isDraggingNode.set(true);
     this.draggedNodeId.set(node.id);
@@ -693,6 +808,12 @@ export class NodeCanvasComponent implements AfterViewInit {
 
   onNodeBodyClick(event: MouseEvent, node: Node) {
     event.stopPropagation();
+    
+    // Only allow editing in edit mode
+    if (!this.nodeEditor.isEditMode()) {
+      return;
+    }
+    
     if (node.type === 'function') {
       this.nodeEditor.selectNode(node.id);
       this.startEditing(node.id);

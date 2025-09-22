@@ -1,1 +1,28 @@
 /* You can add global styles to this file, and also import other style files */
+
+/* Global monospaced font for the entire application */
+* {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+}
+
+/* Ensure body and html use monospaced font */
+html, body {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Apply to all text elements */
+h1, h2, h3, h4, h5, h6, p, span, div, label, input, textarea, button {
+  font-family: inherit;
+}
+
+/* Better monospace rendering */
+body {
+  font-variant-ligatures: normal;
+  font-feature-settings: "liga" 1, "calt" 1;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
