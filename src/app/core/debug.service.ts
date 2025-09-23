@@ -2,6 +2,7 @@ import { Injectable, signal } from '@angular/core';
 
 export interface DebugEntry {
   timestamp: number;
+  relativeTime: number; // ms since session start
   type: 'log' | 'warn' | 'error' | 'info' | 'debug';
   source: string;
   message: string;
@@ -12,12 +13,40 @@ export interface DebugSession {
   id: string;
   startTime: number;
   endTime?: number;
+  duration?: number;
   entries: DebugEntry[];
   metadata: {
     nodeCount: number;
     connectionCount: number;
     executionMode: string;
   };
+  summary: {
+    totalEntries: number;
+    errorCount: number;
+    warningCount: number;
+    executionSuccessful: boolean;
+  };
+}
+
+export interface DebugDump {
+  sessionInfo: {
+    id: string;
+    startTime: string; // ISO string
+    endTime?: string; // ISO string
+    duration: number;
+    metadata: DebugSession['metadata'];
+    summary: DebugSession['summary'];
+  };
+  events: Array<{
+    index: number;
+    timestamp: string; // ISO string
+    relativeTime: number;
+    type: string;
+    source: string;
+    message: string;
+    data?: any;
+  }>;
+  rawSession: DebugSession; // Full raw data for advanced debugging
 }
 
 @Injectable({
@@ -51,7 +80,13 @@ export class DebugService {
       id: sessionId,
       startTime: Date.now(),
       entries: [],
-      metadata
+      metadata,
+      summary: {
+        totalEntries: 0,
+        errorCount: 0,
+        warningCount: 0,
+        executionSuccessful: true
+      }
     };
 
     this.currentSession.set(session);
@@ -68,6 +103,7 @@ export class DebugService {
     if (!session) return null;
 
     session.endTime = Date.now();
+    session.duration = session.endTime - session.startTime;
     this.addEntry('info', 'DebugService', `Ended debug session: ${session.id}`);
     
     // Store completed session
@@ -85,8 +121,10 @@ export class DebugService {
     const session = this.currentSession();
     if (!session) return;
 
+    const timestamp = Date.now();
     const entry: DebugEntry = {
-      timestamp: Date.now(),
+      timestamp,
+      relativeTime: timestamp - session.startTime,
       type,
       source,
       message,
@@ -94,6 +132,15 @@ export class DebugService {
     };
 
     session.entries.push(entry);
+    
+    // Update summary
+    session.summary.totalEntries++;
+    if (type === 'error') {
+      session.summary.errorCount++;
+      session.summary.executionSuccessful = false;
+    } else if (type === 'warn') {
+      session.summary.warningCount++;
+    }
   }
 
   private interceptConsole(): void {
@@ -217,6 +264,82 @@ export class DebugService {
       case 'debug': return '🔍';
       default: return '📝';
     }
+  }
+
+  // Structured dump methods that return JSON objects for Chrome DevTools
+  getDumpData(): DebugDump | null {
+    const session = this.currentSession();
+    if (!session) return null;
+
+    return {
+      sessionInfo: {
+        id: session.id,
+        startTime: new Date(session.startTime).toISOString(),
+        endTime: session.endTime ? new Date(session.endTime).toISOString() : undefined,
+        duration: session.endTime ? (session.endTime - session.startTime) : (Date.now() - session.startTime),
+        metadata: session.metadata,
+        summary: session.summary
+      },
+      events: session.entries.map((entry, index) => ({
+        index,
+        timestamp: new Date(entry.timestamp).toISOString(),
+        relativeTime: entry.relativeTime,
+        type: entry.type,
+        source: entry.source,
+        message: entry.message,
+        data: entry.data
+      })),
+      rawSession: session
+    };
+  }
+
+  getLatestDump(): DebugDump | null {
+    const session = this.getLatestSession();
+    if (!session) return null;
+
+    return {
+      sessionInfo: {
+        id: session.id,
+        startTime: new Date(session.startTime).toISOString(),
+        endTime: session.endTime ? new Date(session.endTime).toISOString() : undefined,
+        duration: session.endTime ? (session.endTime - session.startTime) : (Date.now() - session.startTime),
+        metadata: session.metadata,
+        summary: session.summary
+      },
+      events: session.entries.map((entry, index) => ({
+        index,
+        timestamp: new Date(entry.timestamp).toISOString(),
+        relativeTime: entry.relativeTime,
+        type: entry.type,
+        source: entry.source,
+        message: entry.message,
+        data: entry.data
+      })),
+      rawSession: session
+    };
+  }
+
+  getAllDumps(): DebugDump[] {
+    return this.sessions().map(session => ({
+      sessionInfo: {
+        id: session.id,
+        startTime: new Date(session.startTime).toISOString(),
+        endTime: session.endTime ? new Date(session.endTime).toISOString() : undefined,
+        duration: session.endTime ? (session.endTime - session.startTime) : (Date.now() - session.startTime),
+        metadata: session.metadata,
+        summary: session.summary
+      },
+      events: session.entries.map((entry, index) => ({
+        index,
+        timestamp: new Date(entry.timestamp).toISOString(),
+        relativeTime: entry.relativeTime,
+        type: entry.type,
+        source: entry.source,
+        message: entry.message,
+        data: entry.data
+      })),
+      rawSession: session
+    }));
   }
 
   // Utility method to add custom debug entries

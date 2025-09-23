@@ -34,6 +34,25 @@ export class App {
       console.log(this.debugService.dumpAllSessions());
       console.log('='.repeat(80));
     };
+
+    // Structured dump functions that return JSON objects for Chrome DevTools
+    (window as any).debugData = () => {
+      const data = this.debugService.getLatestDump();
+      console.log('🐛 Latest debug data (right-click to copy object):', data);
+      return data;
+    };
+
+    (window as any).debugDataAll = () => {
+      const data = this.debugService.getAllDumps();
+      console.log('🐛 All debug data (right-click to copy object):', data);
+      return data;
+    };
+
+    (window as any).debugDataCurrent = () => {
+      const data = this.debugService.getDumpData();
+      console.log('🐛 Current session data (right-click to copy object):', data);
+      return data;
+    };
     
     (window as any).debugClear = () => {
       this.debugService.clearSessions();
@@ -41,9 +60,15 @@ export class App {
     };
     
     console.log('🐛 Debug functions available:');
-    console.log('  debugDump() - Show latest debug session');
-    console.log('  debugDumpAll() - Show all debug sessions');
-    console.log('  debugClear() - Clear all debug sessions');
+    console.log('  Text format (formatted output):');
+    console.log('    debugDump() - Show latest debug session');
+    console.log('    debugDumpAll() - Show all debug sessions');
+    console.log('  Structured format (JSON objects for copying):');
+    console.log('    debugData() - Get latest debug session data');
+    console.log('    debugDataAll() - Get all debug sessions data');
+    console.log('    debugDataCurrent() - Get current session data');
+    console.log('  Utility:');
+    console.log('    debugClear() - Clear all debug sessions');
   }
   
   protected readonly title = signal('Impure Data - Visual JavaScript Editor');
