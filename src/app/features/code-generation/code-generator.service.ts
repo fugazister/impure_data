@@ -55,7 +55,7 @@ export class CodeGeneratorService {
         const inputValues = this.getNodeInputValues(node, connections, nodeValues);
         
         // Generate code for this node
-        const nodeCode = nodeType.generator(inputValues, node.config);
+        const nodeCode = nodeType.generator(inputValues, node);
         
         // Store the result for nodes that have outputs
         if (node.outputs.length > 0) {
@@ -193,6 +193,11 @@ export class CodeGeneratorService {
   }
 
   private getNodeVariableName(node: Node): string {
+    // For function nodes, use the custom function name if available
+    if (node.type === 'function' && node.functionName) {
+      return node.functionName;
+    }
+    
     const nodeType = NodeTypeLibrary.getNodeType(node.type);
     const baseName = nodeType?.name.toLowerCase().replace(/\s+/g, '_') || 'node';
     const nodeIdSuffix = node.id.substring(0, 4);

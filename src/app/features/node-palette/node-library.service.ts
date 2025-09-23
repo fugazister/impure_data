@@ -262,10 +262,13 @@ export class NodeTypeLibrary {
       defaultOutputs: [
         { type: 'output', dataType: 'any', label: 'result' }
       ],
-      generator: (inputs, config) => {
-        const customCode = config?.customCode || 'return arg1;';
-        const args = inputs.map((input, index) => `arg${index + 1}: ${input || 'undefined'}`).join(', ');
-        return `((${args}) => {\n${customCode}\n})(${inputs.join(', ')})`;
+      generator: (inputs, node) => {
+        const customCode = node?.customCode || 'return arg1;';
+        const functionName = node?.functionName || 'customFunction';
+        const args = inputs.map((input, index) => `arg${index + 1}`).join(', ');
+        
+        // Create a named function and return it
+        return `function ${functionName}(${args}) {\n  ${customCode}\n}`;
       },
       color: '#9C27B0'
     });

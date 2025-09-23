@@ -47,6 +47,7 @@ export interface Node {
   config?: any; // Node-specific configuration
   collapsed?: boolean;
   customCode?: string; // For user-defined function nodes
+  functionName?: string; // Custom function name for function nodes
 }
 
 export interface Project {

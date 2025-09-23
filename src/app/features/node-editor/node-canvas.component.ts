@@ -133,7 +133,7 @@ import { Node, Connection, Position } from '../../core';
                 font-weight="bold"
                 style="pointer-events: none;"
               >
-                {{ node.label || getNodeTypeName(node.type) }}
+                {{ getNodeDisplayName(node) }}
               </text>
               
               <!-- Move handle indicator -->
@@ -216,9 +216,32 @@ import { Node, Connection, Position } from '../../core';
               
               <!-- Code Editor for Function Nodes (always visible) -->
               @if (node && node.type === 'function') {
+                <!-- Function Name Input -->
                 <foreignObject 
                   x="8" 
                   [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 10"
+                  [attr.width]="getNodeWidth(node) - 16" 
+                  height="25"
+                  style="pointer-events: none;"
+                >
+                  <input
+                    class="function-name-input"
+                    [class.editing]="editingNodeId() === node.id"
+                    [value]="node.functionName || 'myFunction'"
+                    (input)="onFunctionNameChange($event, node.id)"
+                    (blur)="onFunctionNameBlur($event)"
+                    (keydown)="onFunctionNameKeyDown($event)"
+                    (click)="onFunctionNameClick($event, node)"
+                    [readonly]="editingNodeId() !== node.id"
+                    placeholder="Function name"
+                    [style.pointer-events]="editingNodeId() === node.id ? 'all' : 'none'"
+                  />
+                </foreignObject>
+                
+                <!-- Function Code Editor -->
+                <foreignObject 
+                  x="8" 
+                  [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 35"
                   [attr.width]="getNodeWidth(node) - 16" 
                   [attr.height]="editingNodeId() === node.id ? 120 : 60"
                   style="pointer-events: none;"
@@ -469,6 +492,38 @@ import { Node, Connection, Position } from '../../core';
     .code-editor:focus {
       border-color: #9C27B0;
       box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.2);
+    }
+
+    .function-name-input {
+      width: 100%;
+      height: 20px;
+      border: 1px solid #4a5568;
+      border-radius: 4px;
+      background: #1a202c;
+      color: #e2e8f0;
+      font-family: 'JetBrains Mono', 'Fira Code', 'Source Code Pro', 'SF Mono', Monaco, 'Cascadia Code', 'Roboto Mono', Consolas, 'Courier New', monospace;
+      font-size: 11px;
+      font-weight: bold;
+      padding: 2px 6px;
+      outline: none;
+      margin-bottom: 4px;
+    }
+
+    .function-name-input[readonly] {
+      background: #2d3748;
+      border-color: #4a5568;
+      cursor: default;
+      opacity: 0.9;
+    }
+
+    .function-name-input:focus {
+      border-color: #9C27B0;
+      box-shadow: 0 0 0 2px rgba(156, 39, 176, 0.2);
+    }
+
+    .function-name-input.editing {
+      background: #1a202c;
+      border-color: #9C27B0;
     }
     
     /* Execution Mode Styles */
@@ -753,6 +808,7 @@ export class NodeCanvasComponent implements AfterViewInit {
     // Update the node with all custom properties at once
     this.nodeEditor.updateNode(functionNode.id, {
       label: 'Custom Function',
+      functionName: 'myFunction',
       customCode: '',
       inputs: [
         {
@@ -859,7 +915,7 @@ export class NodeCanvasComponent implements AfterViewInit {
   }
 
   // Code editing methods
-  startEditing(nodeId: string): void {
+  startEditing(nodeId: string, focusTarget: 'name' | 'code' = 'code'): void {
     console.log('startEditing called for node:', nodeId);
     
     // Only allow editing in edit mode
@@ -874,40 +930,52 @@ export class NodeCanvasComponent implements AfterViewInit {
     // Use requestAnimationFrame to ensure DOM is fully rendered
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        console.log('Looking for textarea to focus...');
-        
-        // Try multiple approaches to find the textarea
-        // Approach 1: Find by attribute or data
-        let textarea = document.querySelector(`textarea[data-node-id="${nodeId}"]`) as HTMLTextAreaElement;
-        
-        // Approach 2: Find the editing textarea specifically  
-        if (!textarea) {
-          textarea = document.querySelector('.code-editor.editing') as HTMLTextAreaElement;
-          console.log('Found textarea by .editing class:', !!textarea);
-        }
-        
-        // Approach 3: Find all textareas and match by index
-        if (!textarea) {
-          const textareas = document.querySelectorAll('.code-editor');
-          console.log('Found textareas:', textareas.length);
-          
-          const nodes = this.nodeEditor.nodes().filter(n => n.type === 'function');
-          const nodeIndex = nodes.findIndex(node => node.id === nodeId);
-          console.log('Function node index:', nodeIndex, 'for node ID:', nodeId);
-          
-          if (textareas[nodeIndex]) {
-            textarea = textareas[nodeIndex] as HTMLTextAreaElement;
-            console.log('Found textarea at index:', nodeIndex);
+        if (focusTarget === 'name') {
+          console.log('Looking for function name input to focus...');
+          const functionNameInput = document.querySelector('.function-name-input.editing') as HTMLInputElement;
+          if (functionNameInput) {
+            console.log('Focusing function name input');
+            functionNameInput.focus();
+            functionNameInput.select(); // Select all text for easy editing
+          } else {
+            console.log('No function name input found');
           }
-        }
-        
-        if (textarea) {
-          console.log('Focusing textarea');
-          textarea.focus();
-          // Place cursor at the end
-          textarea.setSelectionRange(textarea.value.length, textarea.value.length);
         } else {
-          console.log('No textarea found for node:', nodeId);
+          console.log('Looking for textarea to focus...');
+          
+          // Try multiple approaches to find the textarea
+          // Approach 1: Find by attribute or data
+          let textarea = document.querySelector(`textarea[data-node-id="${nodeId}"]`) as HTMLTextAreaElement;
+          
+          // Approach 2: Find the editing textarea specifically  
+          if (!textarea) {
+            textarea = document.querySelector('.code-editor.editing') as HTMLTextAreaElement;
+            console.log('Found textarea by .editing class:', !!textarea);
+          }
+          
+          // Approach 3: Find all textareas and match by index
+          if (!textarea) {
+            const textareas = document.querySelectorAll('.code-editor');
+            console.log('Found textareas:', textareas.length);
+            
+            const nodes = this.nodeEditor.nodes().filter(n => n.type === 'function');
+            const nodeIndex = nodes.findIndex(node => node.id === nodeId);
+            console.log('Function node index:', nodeIndex, 'for node ID:', nodeId);
+            
+            if (textareas[nodeIndex]) {
+              textarea = textareas[nodeIndex] as HTMLTextAreaElement;
+              console.log('Found textarea at index:', nodeIndex);
+            }
+          }
+          
+          if (textarea) {
+            console.log('Focusing textarea');
+            textarea.focus();
+            // Place cursor at the end
+            textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+          } else {
+            console.log('No textarea found for node:', nodeId);
+          }
         }
       });
     });
@@ -927,9 +995,18 @@ export class NodeCanvasComponent implements AfterViewInit {
       return;
     }
     
-    // Add a small delay to prevent immediate blur when first focusing
+    // Check if focus is moving to another editable element in the same node
     setTimeout(() => {
-      // Double-check we're still not editing (might have been cleared by another event)
+      const activeElement = document.activeElement;
+      const isMovingToFunctionName = activeElement && activeElement.classList.contains('function-name-input');
+      
+      // If focus moved to function name input in edit mode, don't finish editing
+      if (isMovingToFunctionName && this.editingNodeId()) {
+        console.log('Focus moved to function name input, staying in edit mode');
+        return;
+      }
+      
+      // Double-check we're still editing (might have been cleared by another event)
       if (!this.editingNodeId()) {
         console.log('Editing already finished, ignoring delayed blur');
         return;
@@ -943,6 +1020,98 @@ export class NodeCanvasComponent implements AfterViewInit {
   onCodeChange(event: Event, nodeId: string): void {
     const textarea = event.target as HTMLTextAreaElement;
     this.nodeEditor.updateNode(nodeId, { customCode: textarea.value });
+  }
+
+  onFunctionNameChange(event: Event, nodeId: string): void {
+    const input = event.target as HTMLInputElement;
+    this.nodeEditor.updateNode(nodeId, { functionName: input.value });
+  }
+
+  onFunctionNameBlur(event: FocusEvent): void {
+    console.log('onFunctionNameBlur called, current editing node:', this.editingNodeId());
+    
+    // Don't process blur if we're not editing anything
+    if (!this.editingNodeId()) {
+      return;
+    }
+    
+    // Check if focus is moving to another editable element in the same node
+    setTimeout(() => {
+      const activeElement = document.activeElement;
+      const isMovingToCodeEditor = activeElement && activeElement.classList.contains('code-editor');
+      
+      // If focus moved to code editor in edit mode, don't finish editing
+      if (isMovingToCodeEditor && this.editingNodeId()) {
+        console.log('Focus moved to code editor, staying in edit mode');
+        return;
+      }
+      
+      // Double-check we're still editing
+      if (!this.editingNodeId()) {
+        return;
+      }
+      
+      console.log('Finishing editing due to function name blur');
+      this.finishEditing();
+    }, 150);
+  }
+
+  onFunctionNameKeyDown(event: KeyboardEvent): void {
+    // Handle Escape to finish editing
+    if (event.key === 'Escape') {
+      this.finishEditing();
+      event.preventDefault();
+    }
+    // Handle Enter to move to code editor
+    else if (event.key === 'Enter') {
+      event.preventDefault();
+      // Find the code editor and focus it
+      setTimeout(() => {
+        const codeEditor = document.querySelector('.code-editor.editing') as HTMLTextAreaElement;
+        if (codeEditor) {
+          codeEditor.focus();
+        }
+      }, 50);
+    }
+  }
+
+  onFunctionNameClick(event: MouseEvent, node: Node): void {
+    event.stopPropagation(); // Always stop propagation for input clicks
+    
+    const target = event.target as HTMLInputElement;
+    
+    // If input is readonly (not editing), start editing with focus on name
+    if (target && target.readOnly && this.editingNodeId() !== node.id) {
+      // Only allow editing in edit mode
+      if (!this.nodeEditor.isEditMode()) {
+        return;
+      }
+      
+      // Select the node and start editing with focus on function name
+      this.nodeEditor.selectNode(node.id);
+      
+      // Finish editing other nodes first
+      if (this.editingNodeId() && this.editingNodeId() !== node.id) {
+        this.finishEditing();
+      }
+      
+      // Start editing this node with focus on name input
+      setTimeout(() => {
+        this.startEditing(node.id, 'name');
+      }, 50);
+    }
+    // If we're already editing this node but clicked on name input, just focus it
+    else if (this.editingNodeId() === node.id && target && !target.readOnly) {
+      // Input is already editable, just ensure it has focus
+      setTimeout(() => {
+        if (target.focus && typeof target.focus === 'function') {
+          target.focus();
+        }
+        if (target.select && typeof target.select === 'function') {
+          target.select();
+        }
+      }, 10);
+    }
   }
 
   onCodeEditorKeyDown(event: KeyboardEvent): void {
@@ -1150,10 +1319,10 @@ export class NodeCanvasComponent implements AfterViewInit {
     if (!node) return 60;
     const baseHeight = 30 + this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 20 + 10;
     
-    // Add extra height for function nodes to accommodate always-visible code editor
+    // Add extra height for function nodes to accommodate function name input and code editor
     if (node.type === 'function') {
       const isEditing = this.editingNodeId() === node.id;
-      return baseHeight + (isEditing ? 130 : 70); // 130 for editing, 70 for read-only
+      return baseHeight + (isEditing ? 155 : 95); // 155 for editing (25 for name + 130 for code), 95 for read-only (25 for name + 70 for code)
     }
     
     return baseHeight;
@@ -1167,6 +1336,15 @@ export class NodeCanvasComponent implements AfterViewInit {
   getNodeTypeName(typeId: string): string {
     const nodeType = NodeTypeLibrary.getNodeType(typeId);
     return nodeType?.name || 'Unknown';
+  }
+
+  getNodeDisplayName(node: Node): string {
+    // For function nodes, use the custom function name if available
+    if (node.type === 'function' && node.functionName) {
+      return node.functionName;
+    }
+    // Fall back to label or type name
+    return node.label || this.getNodeTypeName(node.type);
   }
 
   isPortConnected(nodeId: string, portId: string, type: 'input' | 'output'): boolean {
