@@ -1,12 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-import { DebugElement, signal } from '@angular/core';
+import { DebugElement, provideZonelessChangeDetection, signal } from '@angular/core';
 
 import { NodeCanvasComponent } from './node-canvas.component';
 import { NodeEditorService } from './node-editor.service';
 import { Node, Position } from '../../core';
 
-describe('NodeCanvasComponent', () => {
+describe('NodeCanvasComponent', async () => {
   let component: NodeCanvasComponent;
   let fixture: ComponentFixture<NodeCanvasComponent>;
   let nodeEditorService: jasmine.SpyObj<NodeEditorService>;
@@ -48,11 +48,13 @@ describe('NodeCanvasComponent', () => {
     await TestBed.configureTestingModule({
       imports: [NodeCanvasComponent],
       providers: [
+        provideZonelessChangeDetection(),
         { provide: NodeEditorService, useValue: nodeEditorSpy }
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(NodeCanvasComponent);
+    await fixture.whenStable();
     component = fixture.componentInstance;
     nodeEditorService = TestBed.inject(NodeEditorService) as jasmine.SpyObj<NodeEditorService>;
 
@@ -78,10 +80,6 @@ describe('NodeCanvasComponent', () => {
         connected: false
       }]
     };
-
-    fixture.detectChanges();
-
-
   });
 
   it('should create', () => {
@@ -92,7 +90,6 @@ describe('NodeCanvasComponent', () => {
     beforeEach(() => {
       // Setup node editor signals to return our mock node
       (nodeEditorService as any).nodes.set([mockNode]);
-      fixture.detectChanges();
     });
 
     it('should start editing when clicking on function node body', async () => {
@@ -155,7 +152,7 @@ describe('NodeCanvasComponent', () => {
       expect(component.editingNodeId()).toBe(null);
 
       // Step 3: Click back on function body
- // Update DOM after editing state change
+      // Update DOM after editing state change
       const nodeBodyAreaAfterBlur = fixture.debugElement.query(By.css('.node-body-edit-area'));
       nodeBodyAreaAfterBlur.nativeElement.click();
       await new Promise(resolve => setTimeout(resolve, 100));
