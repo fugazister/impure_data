@@ -617,6 +617,7 @@ export class NodeCanvasComponent implements AfterViewInit {
   private isDraggingNode = signal(false);
   private dragStartPosition = signal<Position>({ x: 0, y: 0 });
   private draggedNodeId = signal<string | null>(null);
+  private dragNodeOffset = signal<Position>({ x: 0, y: 0 }); // Offset from node's top-left to mouse click point
   
   contextMenu = signal<{
     visible: boolean;
@@ -700,12 +701,19 @@ export class NodeCanvasComponent implements AfterViewInit {
       const nodeId = this.draggedNodeId();
       if (nodeId) {
         const svgRect = this.canvasSvg.nativeElement.getBoundingClientRect();
-        const canvasPos = this.screenToCanvas({
+        const mouseCanvasPos = this.screenToCanvas({
           x: event.clientX - svgRect.left,
           y: event.clientY - svgRect.top
         });
         
-        this.nodeEditor.updateNodePosition(nodeId, canvasPos);
+        // Apply the drag offset to get the correct node position
+        const dragOffset = this.dragNodeOffset();
+        const newNodePosition = {
+          x: mouseCanvasPos.x - dragOffset.x,
+          y: mouseCanvasPos.y - dragOffset.y
+        };
+        
+        this.nodeEditor.updateNodePosition(nodeId, newNodePosition);
       }
     } else if (this.dragConnection()) {
       const svgRect = this.canvasSvg.nativeElement.getBoundingClientRect();
@@ -728,6 +736,7 @@ export class NodeCanvasComponent implements AfterViewInit {
     this.isDraggingCanvas.set(false);
     this.isDraggingNode.set(false);
     this.draggedNodeId.set(null);
+    this.dragNodeOffset.set({ x: 0, y: 0 }); // Reset drag offset
     this.dragConnection.set(null);
   }
 
@@ -1182,6 +1191,17 @@ export class NodeCanvasComponent implements AfterViewInit {
     this.draggedNodeId.set(node.id);
     
     const svgRect = this.canvasSvg.nativeElement.getBoundingClientRect();
+    const mouseCanvasPos = this.screenToCanvas({
+      x: event.clientX - svgRect.left,
+      y: event.clientY - svgRect.top
+    });
+    
+    // Calculate offset from node's top-left corner to mouse position
+    this.dragNodeOffset.set({
+      x: mouseCanvasPos.x - node.position.x,
+      y: mouseCanvasPos.y - node.position.y
+    });
+    
     this.dragStartPosition.set({
       x: event.clientX - svgRect.left,
       y: event.clientY - svgRect.top
