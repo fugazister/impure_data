@@ -265,10 +265,14 @@ export class NodeTypeLibrary {
       generator: (inputs, node) => {
         const customCode = node?.customCode || 'return arg1;';
         const functionName = node?.functionName || 'customFunction';
-        const args = inputs.map((input, index) => `arg${index + 1}`).join(', ');
         
-        // Create a named function and return it
-        return `function ${functionName}(${args}) {\n  ${customCode}\n}`;
+        // Create an IIFE (Immediately Invoked Function Expression) that calls the function with inputs
+        const inputArgs = inputs.map((input, index) => {
+          // If input is undefined/null, use a default value or the parameter name
+          return input || `undefined`;
+        }).join(', ');
+        
+        return `(function ${functionName}(${inputs.map((_, index) => `arg${index + 1}`).join(', ')}) {\n  ${customCode}\n})(${inputArgs})`;
       },
       color: '#9C27B0'
     });
