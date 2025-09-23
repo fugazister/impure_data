@@ -3,6 +3,7 @@ import { NodeCanvasComponent } from './features/node-editor/node-canvas.componen
 import { CodePanelComponent } from './features/code-generation/code-panel.component';
 import { NodeEditorService } from './features/node-editor/node-editor.service';
 import { CodeGeneratorService } from './features/code-generation/code-generator.service';
+import { TriggerExecutorService, ExecutionContext } from './features/code-generation/trigger-executor.service';
 
 @Component({
   selector: 'app-root',
@@ -13,6 +14,7 @@ import { CodeGeneratorService } from './features/code-generation/code-generator.
 export class App {
   private nodeEditorService = inject(NodeEditorService);
   private codeGeneratorService = inject(CodeGeneratorService);
+  private triggerExecutorService = inject(TriggerExecutorService);
   @ViewChild('codePanel') codePanel!: CodePanelComponent;
   
   protected readonly title = signal('Impure Data - Visual JavaScript Editor');
@@ -75,59 +77,40 @@ export class App {
   }
 
   private executeCode(): void {
-    console.log('executeCode() called');
+    console.log('executeCode() called - PD-style execution');
     const nodes = this.nodeEditorService.nodes();
+    const connections = this.nodeEditorService.connections();
     console.log('All nodes:', nodes);
-    const functionNodes = nodes.filter(node => node.type === 'function' && node.customCode);
-    console.log('Function nodes with code:', functionNodes);
+    console.log('All connections:', connections);
     
     // Clear previous execution results and add a test message
     if (this.codePanel) {
-      this.codePanel.executionOutput.set(['=== CODE EXECUTION STARTED ===']);
+      this.codePanel.executionOutput.set([]);
       this.codePanel.executionErrors.set([]);
       console.log('Code panel found, cleared previous results');
     } else {
       console.log('Code panel not found!');
       return;
     }
+
+    // First priority: Execute document triggers (like PD's loadbang)
+    const triggerContext = this.triggerExecutorService.executeDocumentTriggers(nodes, connections);
     
-    if (functionNodes.length === 0) {
-      this.codePanel.executionOutput.set([
-        '=== CODE EXECUTION STARTED ===',
-        'No function nodes with code found'
-      ]);
-      return;
+    // If no document triggers, fall back to function nodes for backward compatibility
+    let functionContext: ExecutionContext = { variables: new Map(), output: [], errors: [] };
+    if (triggerContext.output.length <= 1) { // Only has the header
+      functionContext = this.triggerExecutorService.executeFunctionNodes(nodes);
     }
-    
-    // Execute each function node separately for proof of concept
-    functionNodes.forEach(node => {
-      console.log('Processing node:', node.id, 'with code:', node.customCode);
-      if (node.customCode && node.customCode.trim()) {
-        const result = this.codeGeneratorService.executeCode(node.customCode);
-        console.log('Execution result:', result);
-        
-        if (this.codePanel) {
-          if (result.success) {
-            // Add output with node identification
-            const currentOutput = this.codePanel.executionOutput();
-            this.codePanel.executionOutput.set([
-              ...currentOutput,
-              `--- Node: ${node.label || 'Function'} ---`,
-              ...result.output
-            ]);
-            console.log('Added output to panel');
-          } else {
-            // Add errors with node identification
-            const currentErrors = this.codePanel.executionErrors();
-            this.codePanel.executionErrors.set([
-              ...currentErrors,
-              `Error in ${node.label || 'Function'}: ${result.errors.join(', ')}`
-            ]);
-            console.log('Added errors to panel');
-          }
-        }
-      }
-    });
+
+    // Combine results
+    const allOutput = [...triggerContext.output, ...functionContext.output];
+    const allErrors = [...triggerContext.errors, ...functionContext.errors];
+
+    if (this.codePanel) {
+      this.codePanel.executionOutput.set(allOutput);
+      this.codePanel.executionErrors.set(allErrors);
+      console.log('Updated panel with results:', { output: allOutput, errors: allErrors });
+    }
   }
 
   protected shouldShowCodePanel(): boolean {

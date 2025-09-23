@@ -9,7 +9,8 @@ import { Node, Connection, Position } from '../../core';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="canvas-container" #canvasContainer [class.execution-mode]="!nodeEditor.isEditMode()">
+    <div class="canvas-container" #canvasContainer [class.execution-mode]="!nodeEditor.isEditMode()" 
+         (keydown)="onKeyDown($event)" tabindex="0">
       <!-- Execution Mode Overlay -->
       @if (!nodeEditor.isEditMode()) {
         <div class="execution-overlay">
@@ -76,6 +77,7 @@ import { Node, Connection, Position } from '../../core';
               [class.editing]="editingNodeId() === node.id"
               [class.execution-mode]="!nodeEditor.isEditMode()"
               [attr.transform]="'translate(' + node.position.x + ',' + node.position.y + ')'"
+              (contextmenu)="onNodeRightClick($event, node)"
             >
               <!-- Node background -->
               <rect
@@ -107,13 +109,16 @@ import { Node, Connection, Position } from '../../core';
                 <rect
                   class="node-body-edit-area"
                   x="0"
-                  y="30"
+                  [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 10"
                   [attr.width]="getNodeWidth(node)"
-                  [attr.height]="getNodeHeight(node) - 30"
-                  fill="transparent"
-                  stroke="none"
+                  [attr.height]="editingNodeId() === node.id ? 120 : 60"
+                  fill="rgba(255, 0, 0, 0.1)"
+                  stroke="red"
+                  stroke-width="1"
+                  stroke-dasharray="2,2"
                   (click)="onNodeBodyClick($event, node)"
-                  style="cursor: text;"
+                  (mousedown)="onBodyAreaMouseDown($event, node)"
+                  style="cursor: text; pointer-events: all;"
                 />
               }
               
@@ -216,6 +221,7 @@ import { Node, Connection, Position } from '../../core';
                   [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 10"
                   [attr.width]="getNodeWidth(node) - 16" 
                   [attr.height]="editingNodeId() === node.id ? 120 : 60"
+                  style="pointer-events: none;"
                 >
                   <textarea
                     #codeEditor
@@ -225,10 +231,11 @@ import { Node, Connection, Position } from '../../core';
                     (input)="onCodeChange($event, node.id)"
                     (blur)="onEditorBlur($event)"
                     (keydown)="onCodeEditorKeyDown($event)"
-                    (click)="$event.stopPropagation()"
+                    (click)="onTextAreaClick($event, node)"
                     [readonly]="editingNodeId() !== node.id"
                     placeholder=""
                     [attr.autofocus]="editingNodeId() === node.id ? true : null"
+                    [style.pointer-events]="editingNodeId() === node.id ? 'all' : 'none'"
                   ></textarea>
                 </foreignObject>
               }
@@ -244,10 +251,41 @@ import { Node, Connection, Position } from '../../core';
           [style.left.px]="contextMenu().x"
           [style.top.px]="contextMenu().y"
         >
-          <div class="context-menu-item" (click)="createFunctionNode()">
-            <span class="icon">⚡</span>
-            <span class="label">Function Block</span>
-          </div>
+          <!-- Node-specific menu (when right-clicking on a node) -->
+          @if (contextMenu().nodeId) {
+            <div class="context-menu-item" (click)="deleteNode(contextMenu().nodeId!)">
+              <span class="icon">🗑️</span>
+              <span class="label">Delete Node</span>
+            </div>
+          } @else {
+            <!-- Canvas menu (when right-clicking on empty canvas) -->
+            <div class="context-menu-item" (click)="createFunctionNode()">
+              <span class="icon">⚡</span>
+              <span class="label">Function Block</span>
+            </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item" (click)="createTriggerNode('trigger.document')">
+              <span class="icon">📄</span>
+              <span class="label">Document Trigger</span>
+            </div>
+            <div class="context-menu-item" (click)="createTriggerNode('trigger.bang')">
+              <span class="icon">💥</span>
+              <span class="label">Bang Trigger</span>
+            </div>
+            <div class="context-menu-divider"></div>
+            <div class="context-menu-item" (click)="createDOMNode('dom.querySelector')">
+              <span class="icon">🔍</span>
+              <span class="label">Query Selector</span>
+            </div>
+            <div class="context-menu-item" (click)="createDOMNode('dom.innerHTML')">
+              <span class="icon">📝</span>
+              <span class="label">Set innerHTML</span>
+            </div>
+            <div class="context-menu-item" (click)="createDOMNode('dom.createElement')">
+              <span class="icon">➕</span>
+              <span class="label">Create Element</span>
+            </div>
+          }
         </div>
       }
     </div>
@@ -259,6 +297,11 @@ import { Node, Connection, Position } from '../../core';
       overflow: hidden;
       background: #fafafa;
       position: relative;
+      outline: none; /* Remove focus outline */
+    }
+    
+    .canvas-container:focus {
+      outline: none; /* Ensure no visible focus outline */
     }
     
     .canvas-svg {
@@ -386,6 +429,12 @@ import { Node, Connection, Position } from '../../core';
     
     .context-menu-item .label {
       font-weight: 500;
+    }
+    
+    .context-menu-divider {
+      height: 1px;
+      background: #4a5568;
+      margin: 8px 0;
     }
     
     .code-editor {
@@ -518,10 +567,12 @@ export class NodeCanvasComponent implements AfterViewInit {
     visible: boolean;
     x: number;
     y: number;
+    nodeId?: string; // Add node context
   }>({
     visible: false,
     x: 0,
-    y: 0
+    y: 0,
+    nodeId: undefined
   });
   
   editingNodeId = signal<string | null>(null);
@@ -562,6 +613,10 @@ export class NodeCanvasComponent implements AfterViewInit {
 
   // Canvas events
   onCanvasMouseDown(event: MouseEvent) {
+    // Focus the canvas container to enable keyboard events
+    const container = this.canvasContainer.nativeElement;
+    container.focus();
+    
     this.hideContextMenu(); // Hide context menu on any click
     
     if (event.target === this.canvasSvg.nativeElement || (event.target as Element).classList.contains('grid')) {
@@ -642,7 +697,31 @@ export class NodeCanvasComponent implements AfterViewInit {
     this.contextMenu.set({
       visible: true,
       x: event.clientX - rect.left,
-      y: event.clientY - rect.top
+      y: event.clientY - rect.top,
+      nodeId: undefined // Canvas context
+    });
+  }
+
+  onNodeRightClick(event: MouseEvent, node: Node) {
+    event.preventDefault();
+    event.stopPropagation(); // Prevent canvas right-click
+    
+    // Only show context menu in edit mode
+    if (!this.nodeEditor.isEditMode()) {
+      return;
+    }
+    
+    // Select the node
+    this.nodeEditor.selectNode(node.id);
+    
+    this.hideContextMenu(); // Hide any existing menu
+    
+    const rect = this.canvasSvg.nativeElement.getBoundingClientRect();
+    this.contextMenu.set({
+      visible: true,
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+      nodeId: node.id // Node context
     });
   }
 
@@ -650,7 +729,8 @@ export class NodeCanvasComponent implements AfterViewInit {
     this.contextMenu.set({
       visible: false,
       x: 0,
-      y: 0
+      y: 0,
+      nodeId: undefined
     });
   }
 
@@ -702,6 +782,67 @@ export class NodeCanvasComponent implements AfterViewInit {
     }, 20);
   }
 
+  createTriggerNode(triggerType: string) {
+    // Only allow node creation in edit mode
+    if (!this.nodeEditor.isEditMode()) {
+      this.hideContextMenu();
+      return;
+    }
+    
+    const menu = this.contextMenu();
+    if (!menu.visible) return;
+
+    // Convert screen coordinates to canvas coordinates
+    const canvasPosition = this.screenToCanvas({ x: menu.x, y: menu.y });
+    
+    // Create a new trigger node using the service
+    const triggerNode = this.nodeEditor.addNode(triggerType, canvasPosition);
+    
+    this.hideContextMenu();
+  }
+
+  createDOMNode(domType: string) {
+    // Only allow node creation in edit mode
+    if (!this.nodeEditor.isEditMode()) {
+      this.hideContextMenu();
+      return;
+    }
+    
+    const menu = this.contextMenu();
+    if (!menu.visible) return;
+
+    // Convert screen coordinates to canvas coordinates
+    const canvasPosition = this.screenToCanvas({ x: menu.x, y: menu.y });
+    
+    // Create a new DOM node using the service
+    const domNode = this.nodeEditor.addNode(domType, canvasPosition);
+    
+    this.hideContextMenu();
+  }
+
+  deleteNode(nodeId: string) {
+    // Only allow deletion in edit mode
+    if (!this.nodeEditor.isEditMode()) {
+      this.hideContextMenu();
+      return;
+    }
+    
+    // Remove the node (this also removes all connections involving this node)
+    this.nodeEditor.removeNode(nodeId);
+    
+    // Clear selection if the deleted node was selected
+    if (this.selectedNode()?.id === nodeId) {
+      this.nodeEditor.selectNode(null);
+    }
+    
+    // Stop editing if the deleted node was being edited
+    if (this.editingNodeId() === nodeId) {
+      this.editingNodeId.set(null);
+    }
+    
+    this.hideContextMenu();
+  }
+
   private generateId(): string {
     return Math.random().toString(36).substr(2, 9);
   }
@@ -719,38 +860,84 @@ export class NodeCanvasComponent implements AfterViewInit {
 
   // Code editing methods
   startEditing(nodeId: string): void {
+    console.log('startEditing called for node:', nodeId);
+    
     // Only allow editing in edit mode
     if (!this.nodeEditor.isEditMode()) {
+      console.log('Not in edit mode, cannot start editing');
       return;
     }
     
+    console.log('Setting editing node ID to:', nodeId);
     this.editingNodeId.set(nodeId);
     
     // Use requestAnimationFrame to ensure DOM is fully rendered
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const textarea = document.querySelector('.code-editor') as HTMLTextAreaElement;
+        console.log('Looking for textarea to focus...');
+        
+        // Try multiple approaches to find the textarea
+        // Approach 1: Find by attribute or data
+        let textarea = document.querySelector(`textarea[data-node-id="${nodeId}"]`) as HTMLTextAreaElement;
+        
+        // Approach 2: Find the editing textarea specifically  
+        if (!textarea) {
+          textarea = document.querySelector('.code-editor.editing') as HTMLTextAreaElement;
+          console.log('Found textarea by .editing class:', !!textarea);
+        }
+        
+        // Approach 3: Find all textareas and match by index
+        if (!textarea) {
+          const textareas = document.querySelectorAll('.code-editor');
+          console.log('Found textareas:', textareas.length);
+          
+          const nodes = this.nodeEditor.nodes().filter(n => n.type === 'function');
+          const nodeIndex = nodes.findIndex(node => node.id === nodeId);
+          console.log('Function node index:', nodeIndex, 'for node ID:', nodeId);
+          
+          if (textareas[nodeIndex]) {
+            textarea = textareas[nodeIndex] as HTMLTextAreaElement;
+            console.log('Found textarea at index:', nodeIndex);
+          }
+        }
+        
         if (textarea) {
+          console.log('Focusing textarea');
           textarea.focus();
           // Place cursor at the end
           textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+        } else {
+          console.log('No textarea found for node:', nodeId);
         }
       });
     });
   }
 
   finishEditing(): void {
+    console.log('finishEditing called, current editing node:', this.editingNodeId());
     this.editingNodeId.set(null);
   }
 
   onEditorBlur(event: FocusEvent): void {
+    console.log('onEditorBlur called, current editing node:', this.editingNodeId());
+    
+    // Don't process blur if we're not editing anything
+    if (!this.editingNodeId()) {
+      console.log('No editing node, ignoring blur');
+      return;
+    }
+    
     // Add a small delay to prevent immediate blur when first focusing
     setTimeout(() => {
-      // Only finish editing if the user actually clicked outside
-      if (document.activeElement !== event.target) {
-        this.finishEditing();
+      // Double-check we're still not editing (might have been cleared by another event)
+      if (!this.editingNodeId()) {
+        console.log('Editing already finished, ignoring delayed blur');
+        return;
       }
-    }, 100);
+      
+      console.log('Finishing editing due to blur');
+      this.finishEditing();
+    }, 150);
   }
 
   onCodeChange(event: Event, nodeId: string): void {
@@ -782,6 +969,30 @@ export class NodeCanvasComponent implements AfterViewInit {
     }
   }
 
+  onKeyDown(event: KeyboardEvent): void {
+    // Only handle key events in edit mode
+    if (!this.nodeEditor.isEditMode()) {
+      return;
+    }
+
+    // Handle Delete and Backspace for selected nodes
+    if ((event.key === 'Delete' || event.key === 'Backspace')) {
+      const selectedNode = this.selectedNode();
+      if (selectedNode && !this.editingNodeId()) { // Don't delete if editing code
+        event.preventDefault();
+        this.deleteNode(selectedNode.id);
+      }
+    }
+
+    // Handle Escape to clear selection and hide context menu
+    if (event.key === 'Escape') {
+      this.nodeEditor.selectNode(null);
+      this.hideContextMenu();
+      this.finishEditing();
+      event.preventDefault();
+    }
+  }
+
   getCodePreview(code: string): string {
     if (!code) return 'Double-click to edit';
     const firstLine = code.split('\n')[0].trim();
@@ -809,17 +1020,63 @@ export class NodeCanvasComponent implements AfterViewInit {
   }
 
   onNodeBodyClick(event: MouseEvent, node: Node) {
+    console.log('onNodeBodyClick called for node:', node.id, 'type:', node.type);
+    console.log('Current editing node:', this.editingNodeId());
+    console.log('Is edit mode:', this.nodeEditor.isEditMode());
+    
     event.stopPropagation();
     
     // Only allow editing in edit mode
     if (!this.nodeEditor.isEditMode()) {
+      console.log('Not in edit mode, exiting');
       return;
     }
     
     if (node.type === 'function') {
+      console.log('Function node clicked, starting edit process');
+      // Always start editing when clicking on function body, regardless of selection state
       this.nodeEditor.selectNode(node.id);
-      this.startEditing(node.id);
+      
+      // If already editing this node, don't restart
+      if (this.editingNodeId() === node.id) {
+        console.log('Already editing this node, skipping');
+        return;
+      }
+      
+      // Finish editing other nodes first
+      if (this.editingNodeId() && this.editingNodeId() !== node.id) {
+        console.log('Finishing editing other node:', this.editingNodeId());
+        this.finishEditing();
+      }
+      
+      // Start editing this node
+      console.log('Starting to edit node:', node.id);
+      setTimeout(() => {
+        this.startEditing(node.id);
+      }, 50);
     }
+  }
+
+  onTextAreaClick(event: MouseEvent, node: Node) {
+    console.log('onTextAreaClick called for node:', node.id);
+    console.log('Textarea readonly:', (event.target as HTMLTextAreaElement).readOnly);
+    console.log('Current editing node:', this.editingNodeId());
+    
+    // If textarea is readonly (not editing), start editing
+    if ((event.target as HTMLTextAreaElement).readOnly && this.editingNodeId() !== node.id) {
+      console.log('Readonly textarea clicked, starting edit mode');
+      event.stopPropagation();
+      this.onNodeBodyClick(event, node);
+    } else {
+      console.log('Textarea is already editable or editing this node');
+      event.stopPropagation(); // Always stop propagation for textarea clicks
+    }
+  }
+
+  onBodyAreaMouseDown(event: MouseEvent, node: Node) {
+    console.log('onBodyAreaMouseDown called for node:', node.id);
+    console.log('Mouse event:', event.type, 'at', event.clientX, event.clientY);
+    // Don't prevent default here, let the click event fire normally
   }
 
   // Legacy method - keeping for compatibility with ports

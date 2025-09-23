@@ -11,7 +11,7 @@ export interface Size {
 export interface Port {
   id: string;
   type: 'input' | 'output';
-  dataType: 'number' | 'string' | 'boolean' | 'object' | 'function' | 'any';
+  dataType: 'number' | 'string' | 'boolean' | 'object' | 'function' | 'any' | 'trigger' | 'element';
   label: string;
   value?: any;
   connected?: boolean;
@@ -27,7 +27,7 @@ export interface Connection {
 
 export interface NodeType {
   id: string;
-  category: 'math' | 'logic' | 'control' | 'data' | 'function' | 'io';
+  category: 'math' | 'logic' | 'control' | 'data' | 'function' | 'io' | 'trigger' | 'dom';
   name: string;
   description: string;
   defaultInputs: Omit<Port, 'id'>[];

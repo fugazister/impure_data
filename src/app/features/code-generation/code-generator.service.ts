@@ -203,11 +203,11 @@ export class CodeGeneratorService {
     const indentedCode = codeBlocks.map(line => `  ${line}`).join('\n');
     
     return `function generatedCode() {
-${indentedCode}
-}
+      ${indentedCode}
+      }
 
-// Execute the generated code
-generatedCode();`;
+      // Execute the generated code
+      generatedCode();`;
   }
 
   // Utility method to validate the generated code

@@ -28,6 +28,8 @@ export class NodeTypeLibrary {
     this.registerControlNodes();
     this.registerFunctionNodes();
     this.registerIONodes();
+    this.registerTriggerNodes();
+    this.registerDOMNodes();
   }
 
   private static registerBasicMathNodes(): void {
@@ -313,6 +315,154 @@ export class NodeTypeLibrary {
       defaultOutputs: [],
       generator: (inputs) => `return ${inputs[0] || 'undefined'}`,
       color: '#795548'
+    });
+  }
+
+  private static registerTriggerNodes(): void {
+    // Document trigger - like PD's loadbang
+    this.registerNodeType({
+      id: 'trigger.document',
+      category: 'trigger',
+      name: 'Document',
+      description: 'Triggers when document loads or execution starts (like PD loadbang)',
+      defaultInputs: [],
+      defaultOutputs: [
+        { type: 'output', dataType: 'trigger', label: 'bang' }
+      ],
+      generator: () => `true`, // Always triggers
+      color: '#FF5722'
+    });
+
+    // Manual trigger - like PD's bang
+    this.registerNodeType({
+      id: 'trigger.bang',
+      category: 'trigger',
+      name: 'Bang',
+      description: 'Manual trigger for testing',
+      defaultInputs: [],
+      defaultOutputs: [
+        { type: 'output', dataType: 'trigger', label: 'bang' }
+      ],
+      generator: () => `true`,
+      color: '#FF5722'
+    });
+
+    // Delay trigger
+    this.registerNodeType({
+      id: 'trigger.delay',
+      category: 'trigger',
+      name: 'Delay',
+      description: 'Triggers after a delay in milliseconds',
+      defaultInputs: [
+        { type: 'input', dataType: 'number', label: 'ms', value: 1000 }
+      ],
+      defaultOutputs: [
+        { type: 'output', dataType: 'trigger', label: 'bang' }
+      ],
+      generator: (inputs) => `setTimeout(() => { /* trigger */ }, ${inputs[0] || 1000})`,
+      color: '#FF5722'
+    });
+  }
+
+  private static registerDOMNodes(): void {
+    // Query selector
+    this.registerNodeType({
+      id: 'dom.querySelector',
+      category: 'dom',
+      name: 'Query Selector',
+      description: 'Find DOM element by CSS selector',
+      defaultInputs: [
+        { type: 'input', dataType: 'string', label: 'selector', value: 'body' }
+      ],
+      defaultOutputs: [
+        { type: 'output', dataType: 'element', label: 'element' }
+      ],
+      generator: (inputs) => `document.querySelector(${JSON.stringify(inputs[0] || 'body')})`,
+      color: '#2196F3'
+    });
+
+    // Set innerHTML
+    this.registerNodeType({
+      id: 'dom.innerHTML',
+      category: 'dom',
+      name: 'Set innerHTML',
+      description: 'Set the innerHTML of an element',
+      defaultInputs: [
+        { type: 'input', dataType: 'element', label: 'element' },
+        { type: 'input', dataType: 'string', label: 'html', value: '' }
+      ],
+      defaultOutputs: [
+        { type: 'output', dataType: 'element', label: 'element' }
+      ],
+      generator: (inputs) => `(${inputs[0] || 'null'} && (${inputs[0]}.innerHTML = ${JSON.stringify(inputs[1] || '')}, ${inputs[0]}))`,
+      color: '#2196F3'
+    });
+
+    // Get innerHTML
+    this.registerNodeType({
+      id: 'dom.getInnerHTML',
+      category: 'dom',
+      name: 'Get innerHTML',
+      description: 'Get the innerHTML of an element',
+      defaultInputs: [
+        { type: 'input', dataType: 'element', label: 'element' }
+      ],
+      defaultOutputs: [
+        { type: 'output', dataType: 'string', label: 'html' }
+      ],
+      generator: (inputs) => `(${inputs[0] || 'null'} ? ${inputs[0]}.innerHTML : '')`,
+      color: '#2196F3'
+    });
+
+    // Add event listener
+    this.registerNodeType({
+      id: 'dom.addEventListener',
+      category: 'dom',
+      name: 'Add Event Listener',
+      description: 'Add event listener to an element',
+      defaultInputs: [
+        { type: 'input', dataType: 'element', label: 'element' },
+        { type: 'input', dataType: 'string', label: 'event', value: 'click' },
+        { type: 'input', dataType: 'function', label: 'handler' }
+      ],
+      defaultOutputs: [
+        { type: 'output', dataType: 'element', label: 'element' }
+      ],
+      generator: (inputs) => `(${inputs[0] || 'null'} && ${inputs[0]}.addEventListener(${JSON.stringify(inputs[1] || 'click')}, ${inputs[2] || 'function(){}'}), ${inputs[0]})`,
+      color: '#2196F3'
+    });
+
+    // Create element
+    this.registerNodeType({
+      id: 'dom.createElement',
+      category: 'dom',
+      name: 'Create Element',
+      description: 'Create a new DOM element',
+      defaultInputs: [
+        { type: 'input', dataType: 'string', label: 'tag', value: 'div' }
+      ],
+      defaultOutputs: [
+        { type: 'output', dataType: 'element', label: 'element' }
+      ],
+      generator: (inputs) => `document.createElement(${JSON.stringify(inputs[0] || 'div')})`,
+      color: '#2196F3'
+    });
+
+    // Append child
+    this.registerNodeType({
+      id: 'dom.appendChild',
+      category: 'dom',
+      name: 'Append Child',
+      description: 'Append child element to parent',
+      defaultInputs: [
+        { type: 'input', dataType: 'element', label: 'parent' },
+        { type: 'input', dataType: 'element', label: 'child' }
+      ],
+      defaultOutputs: [
+        { type: 'output', dataType: 'element', label: 'parent' }
+      ],
+      generator: (inputs) => `(${inputs[0] || 'null'} && ${inputs[0]}.appendChild(${inputs[1] || 'null'}), ${inputs[0]})`,
+      color: '#2196F3'
     });
   }
 }
