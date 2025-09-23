@@ -170,8 +170,8 @@ import { Node, Connection, Position } from '../../core';
                     [attr.cx]="0"
                     [attr.cy]="0"
                     r="4"
-                    [attr.fill]="isPortConnected(node.id, input.id, 'input') ? '#007acc' : '#ccc'"
-                    stroke="#333"
+                    [attr.fill]="getInputPortFill(node, input)"
+                    [attr.stroke]="getInputPortStroke(node)"
                     stroke-width="1"
                     (mousedown)="onPortMouseDown($event, node.id, input.id, 'input')"
                     (mouseup)="onPortMouseUp($event, node.id, input.id, 'input')"
@@ -179,11 +179,14 @@ import { Node, Connection, Position } from '../../core';
                   <text
                     x="8"
                     y="3"
-                    fill="#333"
+                    [attr.fill]="getInputPortTextColor(node)"
                     font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
                     font-size="10"
                   >
                     {{ input.label }}
+                    @if (node.type === 'function' && (node.inputs || []).length > 1) {
+                      <tspan fill="#ff6b6b" font-size="8"> (no connections)</tspan>
+                    }
                   </text>
                 </g>
               }
@@ -216,32 +219,177 @@ import { Node, Connection, Position } from '../../core';
               
               <!-- Code Editor for Function Nodes (always visible) -->
               @if (node && node.type === 'function') {
-                <!-- Function Name Input -->
-                <foreignObject 
-                  x="8" 
-                  [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 10"
-                  [attr.width]="getNodeWidth(node) - 16" 
-                  height="25"
-                  style="pointer-events: none;"
-                >
-                  <input
-                    class="function-name-input"
-                    [class.editing]="editingNodeId() === node.id"
-                    [value]="node.functionName || 'myFunction'"
-                    (input)="onFunctionNameChange($event, node.id)"
-                    (blur)="onFunctionNameBlur($event)"
-                    (keydown)="onFunctionNameKeyDown($event)"
-                    (click)="onFunctionNameClick($event, node)"
-                    [readonly]="editingNodeId() !== node.id"
-                    placeholder="Function name"
-                    [style.pointer-events]="editingNodeId() === node.id ? 'all' : 'none'"
+                <!-- Function Header with Drag Handle and Edit Controls -->
+                <g class="function-header">
+                  <!-- Drag handle area -->
+                  <rect
+                    x="0"
+                    y="25"
+                    [attr.width]="getNodeWidth(node)"
+                    height="20"
+                    fill="rgba(156, 39, 176, 0.1)"
+                    stroke="rgba(156, 39, 176, 0.3)"
+                    stroke-width="1"
+                    style="cursor: move;"
+                    (mousedown)="onNodeHeaderMouseDown($event, node)"
                   />
-                </foreignObject>
+                  
+                  <!-- Drag handle dots -->
+                  <text
+                    x="8"
+                    y="38"
+                    fill="rgba(156, 39, 176, 0.6)"
+                    font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
+                    font-size="10"
+                    style="pointer-events: none; user-select: none;"
+                  >
+                    ⋮⋮⋮ Drag to move
+                  </text>
+                  
+                  <!-- Function name display/edit -->
+                  @if (editingFunctionName() === node.id) {
+                    <foreignObject 
+                      x="8" 
+                      y="50"
+                      [attr.width]="getNodeWidth(node) - 50" 
+                      height="25"
+                      style="pointer-events: all;"
+                    >
+                      <input
+                        class="function-name-input editing"
+                        [value]="node.functionName || ''"
+                        (input)="onFunctionNameChange($event, node.id)"
+                        (blur)="onFunctionNameEditEnd()"
+                        (keydown)="onFunctionNameKeyDown($event)"
+                        placeholder="Function name"
+                        style="width: 100%; background: rgba(255,255,255,0.9); border: 1px solid #007acc; border-radius: 3px; padding: 4px; font-family: monospace; font-size: 12px;"
+                        autofocus
+                      />
+                    </foreignObject>
+                  } @else {
+                    <!-- Function name display -->
+                    <text
+                      class="function-name-display"
+                      x="8"
+                      y="67"
+                      fill="white"
+                      font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
+                      font-size="14"
+                      font-weight="bold"
+                      style="pointer-events: none;"
+                    >
+                      {{ node.functionName || 'Unnamed Function' }}
+                    </text>
+                  }
+                  
+                  <!-- Edit function name button -->
+                  <g 
+                    class="edit-name-btn"
+                    [attr.transform]="'translate(' + (getNodeWidth(node) - 35) + ', 50)'"
+                    (click)="toggleFunctionNameEdit(node.id)"
+                    style="cursor: pointer;"
+                  >
+                    <rect
+                      x="0"
+                      y="0"
+                      width="20"
+                      height="20"
+                      fill="rgba(255,255,255,0.1)"
+                      stroke="rgba(255,255,255,0.3)"
+                      stroke-width="1"
+                      rx="3"
+                    />
+                    <text
+                      x="10"
+                      y="13"
+                      fill="white"
+                      font-size="10"
+                      text-anchor="middle"
+                      style="pointer-events: none;"
+                    >
+                      ✏️
+                    </text>
+                  </g>
+                  
+                  <!-- Edit arguments button -->
+                  <g 
+                    class="edit-args-btn"
+                    [attr.transform]="'translate(' + (getNodeWidth(node) - 55) + ', 50)'"
+                    (click)="toggleArgumentsEdit(node.id)"
+                    style="cursor: pointer;"
+                  >
+                    <rect
+                      x="0"
+                      y="0"
+                      width="20"
+                      height="20"
+                      fill="rgba(255,255,255,0.1)"
+                      stroke="rgba(255,255,255,0.3)"
+                      stroke-width="1"
+                      rx="3"
+                    />
+                    <text
+                      x="10"
+                      y="13"
+                      fill="white"
+                      font-size="8"
+                      text-anchor="middle"
+                      style="pointer-events: none;"
+                    >
+                      ⚙️
+                    </text>
+                  </g>
+                </g>
+                
+                <!-- Argument editing interface -->
+                @if (editingArguments() === node.id) {
+                  <foreignObject 
+                    x="8" 
+                    y="80"
+                    [attr.width]="getNodeWidth(node) - 16" 
+                    height="100"
+                    style="pointer-events: all;"
+                  >
+                    <div class="arguments-editor" style="background: rgba(0,0,0,0.8); padding: 8px; border-radius: 4px; border: 1px solid #444;">
+                      <div style="color: #ccc; font-size: 12px; margin-bottom: 8px; font-family: monospace;">Arguments:</div>
+                      @for (input of (node.inputs || []); track input.id; let i = $index) {
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                          <span style="color: #888; font-size: 10px; width: 15px;">{{ i + 1 }}.</span>
+                          <input
+                            [value]="input.label"
+                            (input)="onArgumentNameChange($event, node.id, i)"
+                            placeholder="arg{{ i + 1 }}"
+                            style="flex: 1; background: rgba(255,255,255,0.1); border: 1px solid #666; border-radius: 3px; padding: 4px; color: white; font-family: monospace; font-size: 11px;"
+                          />
+                          <button 
+                            type="button"
+                            (click)="removeArgument(node.id, i)"
+                            [disabled]="(node.inputs || []).length <= 1"
+                            style="background: #f44336; color: white; border: none; border-radius: 3px; width: 18px; height: 18px; font-size: 10px; cursor: pointer;"
+                            title="Remove argument"
+                          >×</button>
+                        </div>
+                      }
+                      <div style="display: flex; gap: 8px; margin-top: 8px;">
+                        <button 
+                          type="button"
+                          (click)="addArgument(node.id)"
+                          style="background: #4CAF50; color: white; border: none; border-radius: 3px; padding: 4px 8px; font-size: 11px; cursor: pointer;"
+                        >+ Add Argument</button>
+                        <button 
+                          type="button"
+                          (click)="closeArgumentsEdit()"
+                          style="background: #666; color: white; border: none; border-radius: 3px; padding: 4px 8px; font-size: 11px; cursor: pointer;"
+                        >Done</button>
+                      </div>
+                    </div>
+                  </foreignObject>
+                }
                 
                 <!-- Function Code Editor -->
                 <foreignObject 
                   x="8" 
-                  [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 35"
+                  [attr.y]="getCodeEditorY(node)"
                   [attr.width]="getNodeWidth(node) - 16" 
                   [attr.height]="editingNodeId() === node.id ? 120 : 60"
                   style="pointer-events: none;"
@@ -261,35 +409,6 @@ import { Node, Connection, Position } from '../../core';
                     [style.pointer-events]="editingNodeId() === node.id ? 'all' : 'none'"
                   ></textarea>
                 </foreignObject>
-                
-                <!-- Argument Management Controls -->
-                @if (editingNodeId() === node.id) {
-                  <foreignObject 
-                    x="8" 
-                    [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 160"
-                    [attr.width]="getNodeWidth(node) - 16" 
-                    height="30"
-                    style="pointer-events: all;"
-                  >
-                    <div class="argument-controls" style="display: flex; gap: 5px; align-items: center; font-size: 12px;">
-                      <span style="color: #888; font-family: monospace;">Args:</span>
-                      <button 
-                        type="button"
-                        (click)="addFunctionArgument(node.id)"
-                        style="background: #4CAF50; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer;"
-                        title="Add argument"
-                      >+</button>
-                      <button 
-                        type="button"
-                        (click)="removeFunctionArgument(node.id)"
-                        [disabled]="(node.inputs || []).length <= 1"
-                        style="background: #f44336; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer; disabled:opacity: 0.5;"
-                        title="Remove argument"
-                      >−</button>
-                      <span style="color: #888; font-family: monospace;">{{ (node.inputs || []).length }}</span>
-                    </div>
-                  </foreignObject>
-                }
               }
             </g>
           }
@@ -661,6 +780,8 @@ export class NodeCanvasComponent implements AfterViewInit {
   });
   
   editingNodeId = signal<string | null>(null);
+  editingFunctionName = signal<string | null>(null);
+  editingArguments = signal<string | null>(null);
   
   dragConnection = signal<{
     fromNodeId: string;
@@ -1013,6 +1134,122 @@ export class NodeCanvasComponent implements AfterViewInit {
         this.nodeEditor.removeConnection(conn.id);
       });
     }
+  }
+
+  // New function UI methods
+  toggleFunctionNameEdit(nodeId: string): void {
+    if (this.editingFunctionName() === nodeId) {
+      this.editingFunctionName.set(null);
+    } else {
+      this.editingFunctionName.set(nodeId);
+    }
+  }
+
+  onFunctionNameEditEnd(): void {
+    this.editingFunctionName.set(null);
+  }
+
+  toggleArgumentsEdit(nodeId: string): void {
+    if (this.editingArguments() === nodeId) {
+      this.editingArguments.set(null);
+    } else {
+      this.editingArguments.set(nodeId);
+    }
+  }
+
+  closeArgumentsEdit(): void {
+    this.editingArguments.set(null);
+  }
+
+  onArgumentNameChange(event: Event, nodeId: string, index: number): void {
+    const target = event.target as HTMLInputElement;
+    const newName = target.value;
+    
+    const node = this.nodeEditor.nodes().find((n: any) => n.id === nodeId);
+    if (!node || !node.inputs) return;
+
+    const updatedInputs = [...node.inputs];
+    if (updatedInputs[index]) {
+      updatedInputs[index] = { ...updatedInputs[index], label: newName };
+      this.nodeEditor.updateNode(nodeId, { inputs: updatedInputs });
+    }
+  }
+
+  addArgument(nodeId: string): void {
+    const node = this.nodeEditor.nodes().find((n: any) => n.id === nodeId);
+    if (!node || node.type !== 'function') return;
+
+    const currentInputs = node.inputs || [];
+    const newArgNumber = currentInputs.length + 1;
+    
+    const newInput = {
+      id: this.generateId(),
+      type: 'input' as const,
+      dataType: 'any' as const,
+      label: `arg${newArgNumber}`,
+      connected: false
+    };
+
+    this.nodeEditor.updateNode(nodeId, {
+      inputs: [...currentInputs, newInput]
+    });
+  }
+
+  removeArgument(nodeId: string, index: number): void {
+    const node = this.nodeEditor.nodes().find((n: any) => n.id === nodeId);
+    if (!node || node.type !== 'function') return;
+
+    const currentInputs = node.inputs || [];
+    if (currentInputs.length <= 1 || index < 0 || index >= currentInputs.length) return;
+
+    // Remove the input at the specified index
+    const updatedInputs = currentInputs.filter((_: any, i: number) => i !== index);
+    
+    // Remove any connections to the removed port
+    const removedPortId = currentInputs[index]?.id;
+    if (removedPortId) {
+      const connections = this.nodeEditor.connections();
+      const connectionsToRemove = connections.filter((conn: any) => 
+        conn.targetPortId === removedPortId
+      );
+      
+      connectionsToRemove.forEach((conn: any) => {
+        this.nodeEditor.removeConnection(conn.id);
+      });
+    }
+
+    this.nodeEditor.updateNode(nodeId, {
+      inputs: updatedInputs
+    });
+  }
+
+  getCodeEditorY(node: any): number {
+    const baseY = 35 + this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 20;
+    const headerHeight = 50; // Function header height
+    const argumentsHeight = this.editingArguments() === node.id ? 100 : 0;
+    return baseY + headerHeight + argumentsHeight + 10;
+  }
+
+  // Port styling methods
+  getInputPortFill(node: any, input: any): string {
+    if (node.type === 'function' && (node.inputs || []).length > 1) {
+      return '#666'; // Disabled color for multi-argument functions
+    }
+    return this.isPortConnected(node.id, input.id, 'input') ? '#007acc' : '#ccc';
+  }
+
+  getInputPortStroke(node: any): string {
+    if (node.type === 'function' && (node.inputs || []).length > 1) {
+      return '#444'; // Disabled stroke for multi-argument functions
+    }
+    return '#333';
+  }
+
+  getInputPortTextColor(node: any): string {
+    if (node.type === 'function' && (node.inputs || []).length > 1) {
+      return '#888'; // Muted text for multi-argument functions
+    }
+    return '#333';
   }
 
   // Code editing methods
@@ -1394,6 +1631,15 @@ export class NodeCanvasComponent implements AfterViewInit {
     if (dragConn && portType === 'input') {
       // Create connection from output to input
       if (dragConn.fromPortType === 'output' && dragConn.fromNodeId !== nodeId) {
+        // Check if target node is a function with multiple arguments
+        const targetNode = this.nodeEditor.nodes().find((n: any) => n.id === nodeId);
+        if (targetNode && targetNode.type === 'function' && (targetNode.inputs || []).length > 1) {
+          // Prevent connection to function nodes with multiple arguments
+          console.warn('Cannot connect to function nodes with multiple arguments');
+          this.dragConnection.set(null);
+          return;
+        }
+        
         this.nodeEditor.addConnection(
           dragConn.fromNodeId,
           dragConn.fromPortId,

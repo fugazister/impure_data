@@ -436,12 +436,12 @@ describe('NodeCanvasComponent', async () => {
       (nodeEditorService as any).nodes.set([mockFunctionNode]);
       fixture.detectChanges();
 
-      // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      // Act - Look for the function name display text (not input)
+      const functionNameDisplay = fixture.debugElement.query(By.css('.function-name-display'));
 
-      // Assert
-      expect(functionNameInput).toBeTruthy();
-      expect(functionNameInput.nativeElement.value).toBe('myFunction');
+      // Assert - In new design, undefined functionName shows "Unnamed Function"
+      expect(functionNameDisplay).toBeTruthy();
+      expect(functionNameDisplay.nativeElement.textContent.trim()).toBe('Unnamed Function');
     });
 
     it('should display custom function name when set', () => {
@@ -454,12 +454,12 @@ describe('NodeCanvasComponent', async () => {
       (nodeEditorService as any).nodes.set([mockFunctionNode]);
       fixture.detectChanges();
 
-      // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      // Act - Look for the function name display text
+      const functionNameDisplay = fixture.debugElement.query(By.css('.function-name-display'));
 
       // Assert
-      expect(functionNameInput).toBeTruthy();
-      expect(functionNameInput.nativeElement.value).toBe(customName);
+      expect(functionNameDisplay).toBeTruthy();
+      expect(functionNameDisplay.nativeElement.textContent.trim()).toBe(customName);
     });
 
     it('should update node title when function name is changed', () => {
@@ -472,47 +472,52 @@ describe('NodeCanvasComponent', async () => {
       (nodeEditorService as any).nodes.set([mockFunctionNode]);
       fixture.detectChanges();
 
-      // Act
+      // Act - For function nodes, the node title should show the function name
       const nodeTitle = fixture.debugElement.query(By.css('.node-title'));
 
       // Assert
+      expect(nodeTitle).toBeTruthy();
       expect(nodeTitle.nativeElement.textContent.trim()).toBe(customName);
     });
 
     it('should make function name input editable in edit mode', () => {
-      // Arrange
+      // Arrange - Put component in edit mode and enable function name editing
       component.editingNodeId.set(mockNode.id);
+      component.toggleFunctionNameEdit(mockNode.id);
       fixture.detectChanges();
 
       // Act
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
 
       // Assert
+      expect(functionNameInput).toBeTruthy();
       expect(functionNameInput.nativeElement.readOnly).toBe(false);
-      expect(functionNameInput.nativeElement.style.pointerEvents).toBe('all');
     });
 
-    it('should make function name input readonly when not in edit mode', () => {
+    it('should show function name as text when not in edit mode', () => {
       // Arrange
       component.editingNodeId.set(null);
       fixture.detectChanges();
 
-      // Act
+      // Act - Look for text display, not input
+      const functionNameDisplay = fixture.debugElement.query(By.css('.function-header text'));
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
 
       // Assert
-      expect(functionNameInput.nativeElement.readOnly).toBe(true);
-      expect(functionNameInput.nativeElement.style.pointerEvents).toBe('none');
+      expect(functionNameDisplay).toBeTruthy();
+      expect(functionNameInput).toBeFalsy(); // Input should not be present when not editing
     });
 
     it('should update function name when input value changes', () => {
-      // Arrange
+      // Arrange - Put component in edit mode and enable function name editing
       component.editingNodeId.set(mockNode.id);
+      component.toggleFunctionNameEdit(mockNode.id);
       fixture.detectChanges();
       const newFunctionName = 'newFunctionName';
 
       // Act
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      expect(functionNameInput).toBeTruthy();
       functionNameInput.nativeElement.value = newFunctionName;
       functionNameInput.triggerEventHandler('input', { target: functionNameInput.nativeElement });
 
@@ -520,36 +525,33 @@ describe('NodeCanvasComponent', async () => {
       expect(nodeEditorService.updateNode).toHaveBeenCalledWith(mockNode.id, { functionName: newFunctionName });
     });
 
-    it('should start editing when clicking on readonly function name input', () => {
+    it('should enable function name editing when clicking edit button', () => {
       // Arrange
       component.editingNodeId.set(null);
       fixture.detectChanges();
-      spyOn(component, 'onFunctionNameClick');
 
-      // Act
+      // Act - Click the edit button for function name
+      const editButton = fixture.debugElement.query(By.css('.edit-name-btn'));
+      expect(editButton).toBeTruthy();
+      editButton.triggerEventHandler('click', new MouseEvent('click'));
+      fixture.detectChanges();
+
+      // Assert - Function name input should now be visible
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
-      const clickEvent = new MouseEvent('click');
-      // Mock the target property to simulate a readonly input
-      Object.defineProperty(clickEvent, 'target', { 
-        value: { readOnly: true }, 
-        configurable: true 
-      });
-      functionNameInput.triggerEventHandler('click', clickEvent);
-
-      // Assert
-      expect(component.onFunctionNameClick).toHaveBeenCalledWith(clickEvent, mockNode);
+      expect(functionNameInput).toBeTruthy();
     });
 
-    it('should not trigger node body click when function name input is already editable', () => {
-      // Arrange
+    it('should not trigger node body click when function name input is visible and editable', () => {
+      // Arrange - Put component in edit mode and enable function name editing
       component.editingNodeId.set(mockNode.id);
+      component.toggleFunctionNameEdit(mockNode.id);
       fixture.detectChanges();
       spyOn(component, 'onNodeBodyClick');
 
       // Act
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      expect(functionNameInput).toBeTruthy();
       const clickEvent = new MouseEvent('click');
-      Object.defineProperty(clickEvent, 'target', { value: { readOnly: false } });
       functionNameInput.triggerEventHandler('click', clickEvent);
 
       // Assert
@@ -580,30 +582,34 @@ describe('NodeCanvasComponent', async () => {
     });
 
     it('should finish editing when pressing Escape in function name input', () => {
-      // Arrange
+      // Arrange - Put component in edit mode and enable function name editing
       component.editingNodeId.set(mockNode.id);
+      component.toggleFunctionNameEdit(mockNode.id);
       fixture.detectChanges();
-      spyOn(component, 'finishEditing');
 
       // Act
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      expect(functionNameInput).toBeTruthy();
       const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
       spyOn(escapeEvent, 'preventDefault');
       functionNameInput.triggerEventHandler('keydown', escapeEvent);
+      fixture.detectChanges();
 
-      // Assert
-      expect(component.finishEditing).toHaveBeenCalled();
+      // Assert - Escape should exit the entire editing mode
+      expect(component.editingNodeId()).toBeNull();
       expect(escapeEvent.preventDefault).toHaveBeenCalled();
     });
 
     it('should focus code editor when pressing Enter in function name input', async () => {
-      // Arrange
+      // Arrange - Put component in edit mode and enable function name editing
       component.editingNodeId.set(mockNode.id);
+      component.toggleFunctionNameEdit(mockNode.id);
       fixture.detectChanges();
       spyOn(document, 'querySelector').and.callThrough();
 
       // Act
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      expect(functionNameInput).toBeTruthy();
       const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
       spyOn(enterEvent, 'preventDefault');
       functionNameInput.triggerEventHandler('keydown', enterEvent);
@@ -709,8 +715,9 @@ describe('NodeCanvasComponent', async () => {
     });
 
     it('should update function name when input value changes', () => {
-      // Arrange - Put component in edit mode
+      // Arrange - Put component in edit mode and enable function name editing
       component.editingNodeId.set(mockFunctionNode.id);
+      component.toggleFunctionNameEdit(mockFunctionNode.id);  // Enable function name editing
       fixture.detectChanges();
       const newFunctionName = 'editedFunctionName';
       if (!nodeEditorService.updateNode.calls) {
@@ -719,6 +726,7 @@ describe('NodeCanvasComponent', async () => {
 
       // Act - Edit the function name
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      expect(functionNameInput).toBeTruthy(); // Verify input is now visible
       functionNameInput.nativeElement.value = newFunctionName;
       functionNameInput.triggerEventHandler('input', { target: functionNameInput.nativeElement });
 
@@ -752,16 +760,18 @@ describe('NodeCanvasComponent', async () => {
       (nodeEditorService as any).nodes.set([mockFunctionNode]);
       fixture.detectChanges();
 
-      // Act
-      const nodeTitle = fixture.debugElement.query(By.css('.node-title'));
+      // Act - Look for the function name display text (not input)
+      const functionNameDisplay = fixture.debugElement.query(By.css('.function-name-display'));
 
       // Assert
-      expect(nodeTitle.nativeElement.textContent.trim()).toBe(customFunctionName);
+      expect(functionNameDisplay).toBeTruthy();
+      expect(functionNameDisplay.nativeElement.textContent.trim()).toBe(customFunctionName);
     });
 
     it('should show function name input as editable when in edit mode', () => {
-      // Arrange
+      // Arrange - Put component in edit mode and enable function name editing
       component.editingNodeId.set(mockFunctionNode.id);
+      component.toggleFunctionNameEdit(mockFunctionNode.id);
       fixture.detectChanges();
 
       // Act
@@ -772,17 +782,18 @@ describe('NodeCanvasComponent', async () => {
       expect(functionNameInput.nativeElement.readOnly).toBe(false);
     });
 
-    it('should show function name input as readonly when not in edit mode', () => {
+    it('should show function name as text when not in edit mode', () => {
       // Arrange
       component.editingNodeId.set(null);
       fixture.detectChanges();
 
-      // Act
+      // Act - Look for text display, not input
+      const functionNameDisplay = fixture.debugElement.query(By.css('.function-name-display'));
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
 
       // Assert
-      expect(functionNameInput).toBeTruthy();
-      expect(functionNameInput.nativeElement.readOnly).toBe(true);
+      expect(functionNameDisplay).toBeTruthy();
+      expect(functionNameInput).toBeFalsy(); // Input should not be present when not editing
     });
 
     it('should show code textarea when in edit mode', () => {
@@ -814,33 +825,36 @@ describe('NodeCanvasComponent', async () => {
       expect(component.editingNodeId()).toBeNull();
     });
 
-    it('should handle function name click when readonly', () => {
+    it('should allow clicking edit button to enable function name editing', () => {
       // Arrange
       component.editingNodeId.set(null);
       fixture.detectChanges();
-      spyOn(component, 'onFunctionNameClick');
 
-      // Act
+      // Act - Click the edit button for function name
+      const editButton = fixture.debugElement.query(By.css('.edit-name-btn'));
+      expect(editButton).toBeTruthy();
+      editButton.triggerEventHandler('click', new MouseEvent('click'));
+      fixture.detectChanges();
+
+      // Assert - Function name input should now be visible
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
-      const clickEvent = { target: { readOnly: true }, stopPropagation: () => {} };
-      functionNameInput.triggerEventHandler('click', clickEvent);
-
-      // Assert
-      expect(component.onFunctionNameClick).toHaveBeenCalledWith(jasmine.any(Object), mockFunctionNode);
+      expect(functionNameInput).toBeTruthy();
     });
 
     it('should handle escape key in function name input', () => {
-      // Arrange
+      // Arrange - Put component in edit mode and enable function name editing
       component.editingNodeId.set(mockFunctionNode.id);
+      component.toggleFunctionNameEdit(mockFunctionNode.id);
       fixture.detectChanges();
 
       // Act
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      expect(functionNameInput).toBeTruthy();
       const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
       functionNameInput.triggerEventHandler('keydown', escapeEvent);
       fixture.detectChanges();
 
-      // Assert
+      // Assert - Escape should exit the entire editing mode  
       expect(component.editingNodeId()).toBeNull();
     });
 
@@ -866,8 +880,9 @@ describe('NodeCanvasComponent', async () => {
     });
 
     it('should handle empty function name input', () => {
-      // Arrange
+      // Arrange - Put component in edit mode and enable function name editing
       component.editingNodeId.set(mockFunctionNode.id);
+      component.toggleFunctionNameEdit(mockFunctionNode.id);
       fixture.detectChanges();
       if (!nodeEditorService.updateNode.calls) {
         spyOn(nodeEditorService, 'updateNode');
@@ -875,6 +890,7 @@ describe('NodeCanvasComponent', async () => {
 
       // Act
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      expect(functionNameInput).toBeTruthy();
       functionNameInput.nativeElement.value = '';
       functionNameInput.triggerEventHandler('input', { target: functionNameInput.nativeElement });
 
@@ -883,8 +899,9 @@ describe('NodeCanvasComponent', async () => {
     });
 
     it('should handle special characters in function name', () => {
-      // Arrange
+      // Arrange - Put component in edit mode and enable function name editing
       component.editingNodeId.set(mockFunctionNode.id);
+      component.toggleFunctionNameEdit(mockFunctionNode.id);
       fixture.detectChanges();
       const specialName = 'my_function$123';
       if (!nodeEditorService.updateNode.calls) {
@@ -893,6 +910,7 @@ describe('NodeCanvasComponent', async () => {
 
       // Act
       const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      expect(functionNameInput).toBeTruthy();
       functionNameInput.nativeElement.value = specialName;
       functionNameInput.triggerEventHandler('input', { target: functionNameInput.nativeElement });
 
@@ -932,11 +950,12 @@ return result;`;
       (nodeEditorService as any).nodes.set([nodeWithoutCustomName]);
       fixture.detectChanges();
 
-      // Act
-      const nodeTitle = fixture.debugElement.query(By.css('.node-title'));
+      // Act - Look for the function name display text
+      const functionNameDisplay = fixture.debugElement.query(By.css('.function-name-display'));
 
       // Assert
-      expect(nodeTitle.nativeElement.textContent.trim()).toBe(nodeWithoutCustomName.label);
+      expect(functionNameDisplay).toBeTruthy();
+      expect(functionNameDisplay.nativeElement.textContent.trim()).toBe('Unnamed Function'); // Default name
     });
 
     it('should set editing node ID when startEditing is called', () => {
