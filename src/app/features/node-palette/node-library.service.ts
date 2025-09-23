@@ -264,15 +264,29 @@ export class NodeTypeLibrary {
       ],
       generator: (inputs, node) => {
         const customCode = node?.customCode || 'return arg1;';
-        const functionName = node?.functionName || 'customFunction';
+        // Generate unique function name - use node's functionName if set, otherwise create from node ID
+        const functionName = node?.functionName || 
+          (node?.id ? `func_${node.id.replace(/[^a-zA-Z0-9]/g, '')}` : 'customFunction');
         
-        // Create an IIFE (Immediately Invoked Function Expression) that calls the function with inputs
+        // Create parameter list based on number of inputs
+        const paramList = inputs.map((_, index) => `arg${index + 1}`).join(', ');
+        
+        // Create an IIFE (Immediately Invoked Function Expression) that:
+        // 1. Declares the function globally for later use
+        // 2. Immediately calls it with the current inputs
         const inputArgs = inputs.map((input, index) => {
-          // If input is undefined/null, use a default value or the parameter name
           return input || `undefined`;
         }).join(', ');
         
-        return `(function ${functionName}(${inputs.map((_, index) => `arg${index + 1}`).join(', ')}) {\n  ${customCode}\n})(${inputArgs})`;
+        return `(function() {
+  // Declare function globally for reuse
+  window.${functionName} = function(${paramList}) {
+    ${customCode}
+  };
+  
+  // Execute immediately with current inputs
+  return window.${functionName}(${inputArgs});
+})()`;
       },
       color: '#9C27B0'
     });

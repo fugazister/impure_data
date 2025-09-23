@@ -261,6 +261,35 @@ import { Node, Connection, Position } from '../../core';
                     [style.pointer-events]="editingNodeId() === node.id ? 'all' : 'none'"
                   ></textarea>
                 </foreignObject>
+                
+                <!-- Argument Management Controls -->
+                @if (editingNodeId() === node.id) {
+                  <foreignObject 
+                    x="8" 
+                    [attr.y]="35 + safeMax(getPortsLength(node.inputs), getPortsLength(node.outputs)) * 20 + 160"
+                    [attr.width]="getNodeWidth(node) - 16" 
+                    height="30"
+                    style="pointer-events: all;"
+                  >
+                    <div class="argument-controls" style="display: flex; gap: 5px; align-items: center; font-size: 12px;">
+                      <span style="color: #888; font-family: monospace;">Args:</span>
+                      <button 
+                        type="button"
+                        (click)="addFunctionArgument(node.id)"
+                        style="background: #4CAF50; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer;"
+                        title="Add argument"
+                      >+</button>
+                      <button 
+                        type="button"
+                        (click)="removeFunctionArgument(node.id)"
+                        [disabled]="(node.inputs || []).length <= 1"
+                        style="background: #f44336; color: white; border: none; border-radius: 3px; width: 20px; height: 20px; font-size: 12px; cursor: pointer; disabled:opacity: 0.5;"
+                        title="Remove argument"
+                      >−</button>
+                      <span style="color: #888; font-family: monospace;">{{ (node.inputs || []).length }}</span>
+                    </div>
+                  </foreignObject>
+                }
               }
             </g>
           }
@@ -814,10 +843,13 @@ export class NodeCanvasComponent implements AfterViewInit {
     // Create a new function node using the service
     const functionNode = this.nodeEditor.addNode('function', canvasPosition);
     
+    // Generate unique function name based on node ID
+    const uniqueFunctionName = this.generateUniqueFunctionName(functionNode.id);
+    
     // Update the node with all custom properties at once
     this.nodeEditor.updateNode(functionNode.id, {
       label: 'Custom Function',
-      functionName: 'myFunction',
+      functionName: uniqueFunctionName,
       customCode: '',
       inputs: [
         {
@@ -912,6 +944,17 @@ export class NodeCanvasComponent implements AfterViewInit {
     return Math.random().toString(36).substr(2, 9);
   }
 
+  private generateUniqueFunctionName(nodeId: string): string {
+    // Create a readable function name from the node ID
+    // Remove any non-alphanumeric characters and ensure it starts with a letter
+    const cleanId = nodeId.replace(/[^a-zA-Z0-9]/g, '');
+    const functionName = cleanId.length > 0 && /^[a-zA-Z]/.test(cleanId) 
+      ? `func_${cleanId}` 
+      : `func_${this.generateId()}`;
+    
+    return functionName;
+  }
+
   // Safe helper for template calculations
   public safeMax(a: number, b: number): number {
     if (typeof a !== 'number' || isNaN(a)) a = 0;
@@ -921,6 +964,55 @@ export class NodeCanvasComponent implements AfterViewInit {
 
   public getPortsLength(ports: any[]): number {
     return Array.isArray(ports) ? ports.length : 0;
+  }
+
+  // Function argument management
+  addFunctionArgument(nodeId: string): void {
+    const node = this.nodeEditor.nodes().find((n: any) => n.id === nodeId);
+    if (!node || node.type !== 'function') return;
+
+    const currentInputs = node.inputs || [];
+    const newArgNumber = currentInputs.length + 1;
+    
+    const newInput = {
+      id: this.generateId(),
+      type: 'input' as const,
+      dataType: 'any' as const,
+      label: `arg${newArgNumber}`,
+      connected: false
+    };
+
+    this.nodeEditor.updateNode(nodeId, {
+      inputs: [...currentInputs, newInput]
+    });
+  }
+
+  removeFunctionArgument(nodeId: string): void {
+    const node = this.nodeEditor.nodes().find((n: any) => n.id === nodeId);
+    if (!node || node.type !== 'function') return;
+
+    const currentInputs = node.inputs || [];
+    if (currentInputs.length <= 1) return; // Keep at least one argument
+
+    // Remove the last input port
+    const updatedInputs = currentInputs.slice(0, -1);
+    
+    this.nodeEditor.updateNode(nodeId, {
+      inputs: updatedInputs
+    });
+
+    // Also remove any connections to the removed port
+    const lastPortId = currentInputs[currentInputs.length - 1]?.id;
+    if (lastPortId) {
+      const connections = this.nodeEditor.connections();
+      const connectionsToRemove = connections.filter((conn: any) => 
+        conn.targetPortId === lastPortId
+      );
+      
+      connectionsToRemove.forEach((conn: any) => {
+        this.nodeEditor.removeConnection(conn.id);
+      });
+    }
   }
 
   // Code editing methods
