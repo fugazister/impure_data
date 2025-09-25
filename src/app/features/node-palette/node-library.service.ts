@@ -324,6 +324,20 @@ export class NodeTypeLibrary {
       color: '#795548'
     });
 
+    // Text Output
+    this.registerNodeType({
+      id: 'output.text',
+      category: 'io',
+      name: 'Text Output',
+      description: 'Display text in a popup window',
+      defaultInputs: [
+        { type: 'input', dataType: 'any', label: 'text' }
+      ],
+      defaultOutputs: [],
+      generator: (inputs) => `/* Text Output: ${inputs[0] || 'undefined'} */`,
+      color: '#FF9800'
+    });
+
     // Return
     this.registerNodeType({
       id: 'io.return',

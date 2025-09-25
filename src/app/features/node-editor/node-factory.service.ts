@@ -3,6 +3,8 @@ import { Node } from '../../core';
 import { BaseNodeComponent } from './components/base-node.component';
 import { FunctionNodeComponent } from './components/function-node.component';
 import { SimpleNodeComponent } from './components/simple-node.component';
+import { LogNodeComponent } from './components/log-node.component';
+import { OutputNodeComponent } from './components/output-node.component';
 
 export interface NodeComponentInfo {
   component: ComponentRef<BaseNodeComponent>;
@@ -20,6 +22,8 @@ export class NodeFactoryService {
   
   private nodeTypeComponentMap = new Map<string, Type<BaseNodeComponent>>([
     ['function', FunctionNodeComponent as Type<BaseNodeComponent>],
+    ['io.console', LogNodeComponent as Type<BaseNodeComponent>],
+    ['output.text', OutputNodeComponent as Type<BaseNodeComponent>],
     // Add more node types as we create their components
   ]);
 

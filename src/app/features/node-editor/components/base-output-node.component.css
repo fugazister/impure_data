@@ -1,0 +1,37 @@
+/* Base output node styles */
+.node-header {
+  fill: #666;
+}
+
+.node-title {
+  fill: white;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.execute-button {
+  cursor: pointer;
+  transition: fill 0.2s ease;
+}
+
+.execute-button:hover {
+  fill: #45a049;
+}
+
+.execute-text {
+  font-family: Arial, sans-serif;
+  font-weight: bold;
+}
+
+.input-value {
+  font-family: Arial, sans-serif;
+}
+
+.output-display {
+  stroke-dasharray: none;
+}
+
+.output-text {
+  font-family: 'Courier New', monospace;
+}

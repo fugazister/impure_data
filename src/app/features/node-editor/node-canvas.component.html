@@ -212,32 +212,8 @@
                 (mousedown)="onNodeHeaderMouseDown($event, node)"
               />
               
-              <!-- Drag handle area (left side, inline) -->
-              <g class="drag-handle-area" transform="translate(8, 8)">
-                <rect
-                  class="drag-handle-bg"
-                  x="0"
-                  y="0"
-                  width="120"
-                  height="24"
-                  fill="rgba(156, 39, 176, 0.1)"
-                  rx="2"
-                  style="pointer-events: none;"
-                />
-                <text
-                  x="4"
-                  y="16"
-                  fill="rgba(156, 39, 176, 0.8)"
-                  font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
-                  font-size="10"
-                  style="pointer-events: none; user-select: none;"
-                >
-                  ⋮⋮⋮ Drag to move
-                </text>
-              </g>
-              
-              <!-- Function name area (right side, inline with drag area) -->
-              <g class="function-name-area" transform="translate(136, 8)">
+              <!-- Function name area (left side, leftmost edge) -->
+              <g class="function-name-area" transform="translate(8, 8)">
                 @if (editingFunctionName() === node.id) {
                   <foreignObject 
                     x="0" 
@@ -299,6 +275,30 @@
                     {{ node.functionName || 'Unnamed Function' }}
                   </text>
                 }
+              </g>
+              
+              <!-- Drag handle area (right side, after function name) -->
+              <g class="drag-handle-area" transform="translate(156, 8)">
+                <rect
+                  class="drag-handle-bg"
+                  x="0"
+                  y="0"
+                  width="120"
+                  height="24"
+                  fill="rgba(156, 39, 176, 0.1)"
+                  rx="2"
+                  style="pointer-events: none;"
+                />
+                <text
+                  x="4"
+                  y="16"
+                  fill="rgba(156, 39, 176, 0.8)"
+                  font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
+                  font-size="10"
+                  style="pointer-events: none; user-select: none;"
+                >
+                  ⋮⋮⋮ Drag to move
+                </text>
               </g>
               
               <!-- Control buttons area (right edge) -->
@@ -542,6 +542,15 @@
         <div class="context-menu-item" (click)="createDOMNode('dom.createElement')">
           <span class="icon">➕</span>
           <span class="label">Create Element</span>
+        </div>
+        <div class="context-menu-divider"></div>
+        <div class="context-menu-item" (click)="createLogNode()">
+          <span class="icon">📋</span>
+          <span class="label">Console Log</span>
+        </div>
+        <div class="context-menu-item" (click)="createTextOutputNode()">
+          <span class="icon">📄</span>
+          <span class="label">Text Output</span>
         </div>
       }
     </div>

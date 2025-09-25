@@ -226,6 +226,88 @@ describe('NodeCanvasComponent', async () => {
         outputs: jasmine.any(Array)
       }));
     });
+
+    it('should create console log node at context menu position', () => {
+      // Arrange
+      const menuPosition = { x: 300, y: 200 };
+      component.contextMenu.set({
+        visible: true,
+        x: menuPosition.x,
+        y: menuPosition.y
+      });
+      
+      const mockLogNode = {
+        id: 'new-log-node',
+        type: 'io.console',
+        position: { x: 300, y: 200 },
+        inputs: [
+          { id: 'input-1', type: 'input' as const, dataType: 'any' as const, label: 'value', connected: false }
+        ],
+        outputs: []
+      };
+      nodeEditorService.addNode.and.returnValue(mockLogNode);
+
+      // Act
+      component.createLogNode();
+
+      // Assert
+      expect(nodeEditorService.addNode).toHaveBeenCalledWith('io.console', jasmine.any(Object));
+      expect(nodeEditorService.updateNode).toHaveBeenCalledWith(mockLogNode.id, {
+        inputs: [{
+          id: 'input-1',
+          type: 'input' as const,
+          dataType: 'any' as const,
+          label: 'value',
+          connected: false,
+          value: 'Hello, World!'
+        }]
+      });
+    });
+  });
+
+  describe('Text Output Node Creation', () => {
+    it('should create text output node when context menu is visible and in edit mode', () => {
+      // Arrange
+      const mockTextOutputNode = {
+        id: 'text-output-node-1',
+        type: 'output.text',
+        position: { x: 0, y: 0 },
+        inputs: [{
+          id: 'input-1',
+          type: 'input' as const,
+          dataType: 'any' as const,
+          label: 'text',
+          connected: false,
+          value: undefined
+        }],
+        outputs: []
+      };
+
+      nodeEditorService.addNode.and.returnValue(mockTextOutputNode);
+      spyOn(nodeEditorService, 'isEditMode').and.returnValue(true);
+      component.contextMenu.set({
+        visible: true,
+        x: 100,
+        y: 200,
+        nodeId: undefined
+      });
+
+      // Act
+      component.createTextOutputNode();
+
+      // Assert
+      expect(nodeEditorService.addNode).toHaveBeenCalledWith('output.text', jasmine.any(Object));
+      expect(nodeEditorService.updateNode).toHaveBeenCalledWith(mockTextOutputNode.id, {
+        inputs: [{
+          id: 'input-1',
+          type: 'input' as const,
+          dataType: 'any' as const,
+          label: 'text',
+          connected: false,
+          value: 'Sample text'
+        }]
+      });
+    });
   });
 
   describe('Node Deletion', () => {
@@ -558,27 +640,69 @@ describe('NodeCanvasComponent', async () => {
       expect(component.onNodeBodyClick).not.toHaveBeenCalled();
     });
 
-    it('should finish editing on function name blur', async () => {
+    it('should keep editing active when function name blur moves to code editor', async () => {
       // Arrange
       component.editingNodeId.set(mockNode.id);
       fixture.detectChanges();
       spyOn(component, 'finishEditing');
+      
+      // Mock document.activeElement to simulate focus moving to code editor
+      const originalActiveElement = document.activeElement;
+      const mockCodeEditor = document.createElement('textarea');
+      mockCodeEditor.classList.add('code-editor');
+      Object.defineProperty(document, 'activeElement', {
+        get: () => mockCodeEditor,
+        configurable: true
+      });
 
-      // Act - Test blur with fallback since function name input may not render in test environment
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
-      if (functionNameInput) {
-        const blurEvent = new FocusEvent('blur');
-        functionNameInput.triggerEventHandler('blur', blurEvent);
-        await new Promise(resolve => setTimeout(resolve, 200)); // Wait for timeout
-      } else {
-        // Fallback: test the blur method directly without focus moving to code editor
+      try {
+        // Act - Test blur method directly
         const blurEvent = { relatedTarget: null } as any;
         component.onFunctionNameBlur(blurEvent);
         await new Promise(resolve => setTimeout(resolve, 200)); // Wait for timeout
-      }
 
-      // Assert
-      expect(component.finishEditing).toHaveBeenCalled();
+        // Assert - finishEditing should NOT be called because focus moved to code editor
+        expect(component.finishEditing).not.toHaveBeenCalled();
+        // Editing should still be active
+        expect(component.editingNodeId()).toBe(mockNode.id);
+      } finally {
+        // Restore original activeElement
+        Object.defineProperty(document, 'activeElement', {
+          get: () => originalActiveElement,
+          configurable: true
+        });
+      }
+    });
+
+    it('should finish editing on function name blur when focus does not move to code editor', async () => {
+      // Arrange
+      component.editingNodeId.set(mockNode.id);
+      fixture.detectChanges();
+      spyOn(component, 'finishEditing');
+      
+      // Mock document.activeElement to simulate focus not moving to code editor
+      const originalActiveElement = document.activeElement;
+      const mockElement = document.createElement('div');
+      Object.defineProperty(document, 'activeElement', {
+        get: () => mockElement,
+        configurable: true
+      });
+
+      try {
+        // Act - Test blur method directly
+        const blurEvent = { relatedTarget: null } as any;
+        component.onFunctionNameBlur(blurEvent);
+        await new Promise(resolve => setTimeout(resolve, 200)); // Wait for timeout
+
+        // Assert - finishEditing should be called because focus did not move to code editor
+        expect(component.finishEditing).toHaveBeenCalled();
+      } finally {
+        // Restore original activeElement
+        Object.defineProperty(document, 'activeElement', {
+          get: () => originalActiveElement,
+          configurable: true
+        });
+      }
     });
 
     it('should finish editing when pressing Escape in function name input', () => {
