@@ -462,7 +462,7 @@ describe('NodeCanvasComponent', async () => {
       expect(functionNameDisplay.nativeElement.textContent.trim()).toBe(customName);
     });
 
-    it('should update node title when function name is changed', () => {
+    it('should display function name in function header when changed', () => {
       // Arrange
       const customName = 'myCustomFunction';
       const mockFunctionNode = {
@@ -472,12 +472,12 @@ describe('NodeCanvasComponent', async () => {
       (nodeEditorService as any).nodes.set([mockFunctionNode]);
       fixture.detectChanges();
 
-      // Act - For function nodes, the node title should show the function name
-      const nodeTitle = fixture.debugElement.query(By.css('.node-title'));
+      // Act - For function nodes, the function name should be displayed in the function header
+      const functionNameDisplay = fixture.debugElement.query(By.css('.function-name-display'));
 
       // Assert
-      expect(nodeTitle).toBeTruthy();
-      expect(nodeTitle.nativeElement.textContent.trim()).toBe(customName);
+      expect(functionNameDisplay).toBeTruthy();
+      expect(functionNameDisplay.nativeElement.textContent.trim()).toBe(customName);
     });
 
     it('should make function name input editable in edit mode', () => {
