@@ -194,7 +194,7 @@
           
           <!-- Function Nodes with proper hierarchy -->
           @if (node && node.type === 'function') {
-            <!-- Function Header Group with nested elements -->
+            <!-- Function Header Group with inline layout -->
             <g class="function-header" transform="translate(0, 0)">
               <!-- Main header background -->
               <rect
@@ -202,7 +202,7 @@
                 x="0"
                 y="0"
                 [attr.width]="getNodeWidth(node)"
-                height="60"
+                height="40"
                 fill="rgba(156, 39, 176, 0.15)"
                 stroke="rgba(156, 39, 176, 0.4)"
                 stroke-width="1"
@@ -212,21 +212,21 @@
                 (mousedown)="onNodeHeaderMouseDown($event, node)"
               />
               
-              <!-- Drag handle area (nested inside header) -->
+              <!-- Drag handle area (left side, inline) -->
               <g class="drag-handle-area" transform="translate(8, 8)">
                 <rect
                   class="drag-handle-bg"
                   x="0"
                   y="0"
-                  width="100"
-                  height="16"
+                  width="120"
+                  height="24"
                   fill="rgba(156, 39, 176, 0.1)"
                   rx="2"
                   style="pointer-events: none;"
                 />
                 <text
                   x="4"
-                  y="12"
+                  y="16"
                   fill="rgba(156, 39, 176, 0.8)"
                   font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
                   font-size="10"
@@ -236,14 +236,14 @@
                 </text>
               </g>
               
-              <!-- Function name area (nested inside header) -->
-              <g class="function-name-area" transform="translate(8, 25)">
+              <!-- Function name area (right side, inline with drag area) -->
+              <g class="function-name-area" transform="translate(136, 8)">
                 @if (editingFunctionName() === node.id) {
                   <foreignObject 
                     x="0" 
                     y="0"
-                    [attr.width]="getNodeWidth(node) - 70" 
-                    height="25"
+                    [attr.width]="getFunctionNameWidth(node)" 
+                    height="24"
                     style="pointer-events: all;"
                   >
                     <input
@@ -263,15 +263,28 @@
                     class="function-name-bg"
                     x="0"
                     y="0"
-                    [attr.width]="getNodeWidth(node) - 70"
-                    height="25"
+                    [attr.width]="getFunctionNameWidth(node)"
+                    height="24"
                     fill="rgba(255, 255, 255, 0.05)"
                     stroke="rgba(255, 255, 255, 0.1)"
                     stroke-width="1"
                     rx="3"
                     style="pointer-events: none;"
                   />
-                  <!-- Function name text -->
+                  
+                  <!-- SVG text clipping for overflow handling -->
+                  <defs>
+                    <clipPath [id]="'function-name-clip-' + node.id">
+                      <rect
+                        x="0"
+                        y="0"
+                        [attr.width]="getFunctionNameWidth(node) - 8"
+                        height="24"
+                      />
+                    </clipPath>
+                  </defs>
+                  
+                  <!-- Function name text with clipping -->
                   <text
                     class="function-name-display"
                     x="4"
@@ -281,14 +294,15 @@
                     font-size="12"
                     font-weight="bold"
                     style="pointer-events: none;"
+                    [attr.clip-path]="'url(#function-name-clip-' + node.id + ')'"
                   >
                     {{ node.functionName || 'Unnamed Function' }}
                   </text>
                 }
               </g>
               
-              <!-- Control buttons area (nested inside header) -->
-              <g class="control-buttons" [attr.transform]="'translate(' + (getNodeWidth(node) - 60) + ', 25)'">
+              <!-- Control buttons area (right edge) -->
+              <g class="control-buttons" [attr.transform]="'translate(' + (getNodeWidth(node) - 50) + ', 8)'">
                 <!-- Edit function name button -->
                 <g 
                   class="edit-name-btn"
@@ -354,14 +368,14 @@
             </g> <!-- Close function-header group -->
             
             <!-- Function body area (nested structure) -->
-            <g class="function-body" [attr.transform]="'translate(0, ' + (getCodeEditorY(node) - 5) + ')'">
+            <g class="function-body" [attr.transform]="'translate(0, ' + getFunctionBodyY(node) + ')'">
               <!-- Body background -->
               <rect
                 class="function-body-bg"
                 x="0"
                 y="0"
                 [attr.width]="getNodeWidth(node)"
-                [attr.height]="editingNodeId() === node.id ? 130 : 70"
+                [attr.height]="getFunctionBodyHeight(node)"
                 fill="rgba(33, 150, 243, 0.05)"
                 stroke="rgba(156, 39, 176, 0.3)"
                 stroke-width="1"
@@ -376,7 +390,7 @@
                 x="0"
                 y="0"
                 [attr.width]="getNodeWidth(node)"
-                [attr.height]="editingNodeId() === node.id ? 130 : 70"
+                [attr.height]="getFunctionBodyHeight(node)"
                 fill="transparent"
                 (click)="onNodeBodyClick($event, node)"
                 (mousedown)="onBodyAreaMouseDown($event, node)"
@@ -449,7 +463,7 @@
                   x="0"
                   y="0"
                   [attr.width]="getNodeWidth(node) - 16"
-                  [attr.height]="editingNodeId() === node.id ? 120 : 60"
+                  [attr.height]="getCodeEditorHeight(node)"
                   fill="rgba(0, 0, 0, 0.3)"
                   stroke="rgba(255, 255, 255, 0.1)"
                   stroke-width="1"
@@ -462,7 +476,7 @@
                   x="0" 
                   y="0"
                   [attr.width]="getNodeWidth(node) - 16" 
-                  [attr.height]="editingNodeId() === node.id ? 120 : 60"
+                  [attr.height]="getCodeEditorHeight(node)"
                   style="pointer-events: none;"
                 >
                   <textarea

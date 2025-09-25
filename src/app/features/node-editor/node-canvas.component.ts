@@ -479,11 +479,70 @@ export class NodeCanvasComponent implements AfterViewInit {
     });
   }
 
+  /**
+   * Get the dynamic height of a function node's header
+   * This method can be used both internally and in templates
+   */
+  getFunctionHeaderHeight(node: any): number {
+    if (node.type !== 'function') {
+      return 30; // Regular node header height
+    }
+    
+    // Function header components:
+    // - Main header area: 40px (inline layout with drag handle + function name + buttons)
+    // - Arguments editor (if open): 100px
+    let headerHeight = 40; // Updated base function header height for inline layout
+    
+    if (this.editingArguments() === node.id) {
+      headerHeight += 100; // Add arguments editor height
+    }
+    
+    return headerHeight;
+  }
+
+  /**
+   * Get the Y position where the function body should start relative to the node's coordinate system
+   * This is used for positioning the function-body group in the hierarchical structure
+   */
+  getFunctionBodyY(node: any): number {
+    if (node.type !== 'function') {
+      // For non-function nodes, use the old calculation
+      const baseY = 35 + this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 20;
+      return baseY + 10;
+    }
+    
+    // For function nodes with hierarchical structure:
+    // Start after the ports area (ports start at Y=35 and are 20px apart)
+    const portsY = 35 + this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 20;
+    
+    // Add the dynamic header height (this is independent of ports)
+    const headerHeight = this.getFunctionHeaderHeight(node);
+    
+    // Return position where body should start
+    return Math.max(portsY, headerHeight) + 5; // 5px gap
+  }
+
+  /**
+   * Get the height of the function body area based on editing state
+   * This includes padding around the code editor
+   */
+  getFunctionBodyHeight(node: any): number {
+    return this.editingNodeId() === node.id ? 130 : 70;
+  }
+
+  /**
+   * Get the height of the code editor area based on editing state
+   */
+  getCodeEditorHeight(node: any): number {
+    return this.editingNodeId() === node.id ? 120 : 60;
+  }
+
+  /**
+   * @deprecated Use getFunctionBodyY() for hierarchical positioning
+   * Keep this for backward compatibility with non-hierarchical code
+   */
   getCodeEditorY(node: any): number {
-    const baseY = 35 + this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 20;
-    const headerHeight = 60; // Function header height (consolidated header)
-    const argumentsHeight = this.editingArguments() === node.id ? 100 : 0;
-    return baseY + headerHeight + argumentsHeight + 10;
+    return this.getFunctionBodyY(node);
   }
 
   // Port styling methods
@@ -925,18 +984,51 @@ export class NodeCanvasComponent implements AfterViewInit {
   }
 
   getNodeWidth(node: Node): number {
-    if (!node) return 120;
+    if (!node) return 240; // Increased minimum width for inline header
+    
+    if (node.type === 'function') {
+      // For function nodes, calculate adaptive width based on header content
+      const dragAreaWidth = 120;
+      const nameAreaWidth = this.getFunctionNameWidth(node);
+      const buttonsWidth = 50;
+      const padding = 16; // 8px on each side
+      
+      const headerContentWidth = dragAreaWidth + nameAreaWidth + buttonsWidth + padding;
+      const portsWidth = this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 80 + 40;
+      
+      return Math.max(240, headerContentWidth, portsWidth); // 240px minimum (120+120)
+    }
+    
     return Math.max(120, this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 80 + 40);
+  }
+
+  getFunctionNameWidth(node: Node): number {
+    if (!node || node.type !== 'function') return 120;
+    
+    const functionName = node.functionName || 'Unnamed Function';
+    
+    // Estimate text width based on character count (rough approximation)
+    // Using monospace font, approximately 7 pixels per character
+    const estimatedTextWidth = functionName.length * 7 + 8; // +8 for padding
+    
+    // Ensure minimum width of 120px, but allow expansion for longer names
+    const minWidth = 120;
+    const maxWidth = 300; // Reasonable maximum to prevent excessive width
+    
+    return Math.max(minWidth, Math.min(maxWidth, estimatedTextWidth));
   }
 
   getNodeHeight(node: Node): number {
     if (!node) return 60;
     const baseHeight = 30 + this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 20 + 10;
     
-    // Add extra height for function nodes to accommodate function name input and code editor
+    // Add extra height for function nodes using dynamic header height calculation
     if (node.type === 'function') {
-      const isEditing = this.editingNodeId() === node.id;
-      return baseHeight + (isEditing ? 155 : 95); // 155 for editing (25 for name + 130 for code), 95 for read-only (25 for name + 70 for code)
+      const headerHeight = this.getFunctionHeaderHeight(node);
+      const codeAreaHeight = this.editingNodeId() === node.id ? 130 : 70;
+      const gap = 10; // Gap between header and code area
+      
+      return baseHeight + headerHeight + codeAreaHeight + gap;
     }
     
     return baseHeight;
