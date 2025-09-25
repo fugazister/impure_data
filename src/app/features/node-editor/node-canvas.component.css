@@ -210,6 +210,15 @@
   border-color: #9C27B0;
 }
 
+.function-header-bg {
+  transition: all 0.2s ease;
+}
+
+.function-header-bg:hover {
+  fill: rgba(156, 39, 176, 0.25);
+  stroke: rgba(156, 39, 176, 0.6);
+}
+
 /* Execution Mode Styles */
 .canvas-container.execution-mode {
   position: relative;
@@ -268,6 +277,130 @@
 .node.execution-mode .node-header {
   cursor: default !important;
   opacity: 0.8;
+}
+
+/* Hierarchical Structure Styles */
+
+/* Function Header Group */
+.function-header {
+  transition: all 0.2s ease;
+}
+
+.function-header:hover .function-header-bg {
+  fill: rgba(156, 39, 176, 0.25);
+  stroke: rgba(156, 39, 176, 0.6);
+}
+
+/* Drag Handle Area */
+.drag-handle-area {
+  transition: opacity 0.2s ease;
+}
+
+.drag-handle-bg {
+  transition: all 0.2s ease;
+}
+
+.drag-handle-area:hover .drag-handle-bg {
+  fill: rgba(156, 39, 176, 0.2);
+}
+
+/* Function Name Area */
+.function-name-area {
+  transition: all 0.2s ease;
+}
+
+.function-name-bg {
+  transition: all 0.2s ease;
+}
+
+.function-name-area:hover .function-name-bg {
+  fill: rgba(255, 255, 255, 0.1);
+  stroke: rgba(255, 255, 255, 0.2);
+}
+
+/* Control Buttons Area */
+.control-buttons {
+  transition: all 0.2s ease;
+}
+
+.edit-name-btn,
+.edit-args-btn {
+  transition: all 0.2s ease;
+}
+
+.edit-name-btn:hover .button-bg,
+.edit-args-btn:hover .button-bg {
+  fill: rgba(255, 255, 255, 0.4);
+  stroke: rgba(255, 255, 255, 0.6);
+}
+
+.edit-name-btn:active .button-bg,
+.edit-args-btn:active .button-bg {
+  fill: rgba(156, 39, 176, 0.3);
+  stroke: rgba(156, 39, 176, 0.8);
+}
+
+/* Function Body Group */
+.function-body {
+  transition: all 0.2s ease;
+}
+
+.function-body-bg {
+  transition: all 0.2s ease;
+}
+
+.node.editing .function-body-bg {
+  fill: rgba(33, 150, 243, 0.1);
+  stroke: rgba(156, 39, 176, 0.5);
+}
+
+/* Arguments Editor */
+.arguments-editor-wrapper {
+  transition: all 0.2s ease;
+}
+
+.arguments-editor-bg {
+  transition: all 0.2s ease;
+}
+
+/* Code Editor Area */
+.code-editor-area {
+  transition: all 0.2s ease;
+}
+
+.code-editor-bg {
+  transition: all 0.2s ease;
+}
+
+.node.editing .code-editor-bg {
+  fill: rgba(0, 0, 0, 0.5);
+  stroke: rgba(255, 255, 255, 0.2);
+}
+
+/* Interactive Zones */
+.node-body-edit-area {
+  transition: all 0.2s ease;
+}
+
+.node-body-edit-area:hover {
+  fill: rgba(33, 150, 243, 0.1);
+}
+
+/* Enhanced visual feedback for nested structure */
+.function-header .function-header-bg {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+}
+
+.function-body .function-body-bg {
+  filter: drop-shadow(0 1px 3px rgba(0,0,0,0.15));
+}
+
+.arguments-editor-wrapper .arguments-editor-bg {
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.25));
+}
+
+.code-editor-area .code-editor-bg {
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.2));
 }
 
 .node.execution-mode .node-body-edit-area {

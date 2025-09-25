@@ -481,7 +481,7 @@ export class NodeCanvasComponent implements AfterViewInit {
 
   getCodeEditorY(node: any): number {
     const baseY = 35 + this.safeMax(this.getPortsLength(node.inputs), this.getPortsLength(node.outputs)) * 20;
-    const headerHeight = 30; // Function header height (reduced from 50 to 30)
+    const headerHeight = 60; // Function header height (consolidated header)
     const argumentsHeight = this.editingArguments() === node.id ? 100 : 0;
     return baseY + headerHeight + argumentsHeight + 10;
   }
