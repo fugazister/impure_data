@@ -1,0 +1,80 @@
+<g 
+  class="node"
+  [class.selected]="isSelected"
+  [class.editing]="isEditing"
+  [class.execution-mode]="!isEditMode"
+  [attr.transform]="'translate(' + node.position.x + ',' + node.position.y + ')'"
+  (contextmenu)="onNodeRightClick($event)"
+>
+  <!-- Node background -->
+  <rect
+    class="node-background"
+    [attr.width]="width"
+    [attr.height]="height"
+    [attr.fill]="backgroundColor"
+    rx="4"
+    ry="4"
+  />
+  
+  <!-- Custom node content slot -->
+  <ng-content></ng-content>
+  
+  <!-- Move handle indicator -->
+  <text
+    class="move-indicator"
+    [attr.x]="width - 20"
+    y="20"
+  >
+    ⋮⋮
+  </text>
+  
+  <!-- Input ports -->
+  @for (input of (node.inputs || []); track input.id; let i = $index) {
+    <g class="port input-port" [attr.transform]="'translate(0,' + getPortY(i) + ')'">
+      <circle
+        class="port-circle input-port-circle"
+        [attr.cx]="0"
+        [attr.cy]="0"
+        r="4"
+        [attr.fill]="getInputPortFill(input)"
+        [attr.stroke]="getInputPortStroke()"
+        (mousedown)="onPortMouseDown($event, input.id, 'input')"
+        (mouseup)="onPortMouseUp($event, input.id, 'input')"
+      />
+      <text
+        class="port-label input-port-label"
+        x="8"
+        y="3"
+        [attr.fill]="getInputPortTextColor()"
+      >
+        {{ input.label }}
+        @if (node.type === 'function' && (node.inputs || []).length > 1) {
+          <tspan class="no-connections-warning"> (no connections)</tspan>
+        }
+      </text>
+    </g>
+  }
+  
+  <!-- Output ports -->
+  @for (output of (node.outputs || []); track output.id; let i = $index) {
+    <g class="port output-port" [attr.transform]="'translate(' + width + ',' + getPortY(i) + ')'">
+      <circle
+        class="port-circle output-port-circle"
+        [attr.cx]="0"
+        [attr.cy]="0"
+        r="4"
+        [attr.fill]="isPortConnected(output.id, 'output') ? '#007acc' : '#ccc'"
+        (mousedown)="onPortMouseDown($event, output.id, 'output')"
+        (mouseup)="onPortMouseUp($event, output.id, 'output')"
+      />
+      <text
+        class="port-label output-port-label"
+        [attr.x]="-8"
+        y="3"
+        text-anchor="end"
+      >
+        {{ output.label }}
+      </text>
+    </g>
+  }
+</g>

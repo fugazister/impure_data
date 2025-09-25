@@ -1,0 +1,277 @@
+<app-node-wrapper
+  [node]="node"
+  [width]="getWidth()"
+  [height]="getHeight()"
+  [backgroundColor]="getColor()"
+  [isSelected]="isSelected"
+  [isEditing]="isEditing"
+  [isEditMode]="isEditMode"
+  (nodeRightClick)="onNodeRightClick($event)"
+  (portMouseDown)="onPortMouseDown($event.event, $event.portId, $event.portType)"
+  (portMouseUp)="onPortMouseUp($event.event, $event.portId, $event.portType)"
+>
+  <!-- Function Header Group with inline layout -->
+  <g class="function-header" transform="translate(0, 0)">
+    <!-- Main header background -->
+    <rect
+      class="function-header-bg"
+      x="0"
+      y="0"
+      [attr.width]="getWidth()"
+      height="40"
+      rx="4"
+      ry="4"
+      (mousedown)="onHeaderMouseDown($event)"
+    />
+    
+    <!-- Drag handle area (left side, inline) -->
+    <g class="drag-handle-area" transform="translate(8, 8)">
+      <rect
+        class="drag-handle-bg"
+        x="0"
+        y="0"
+        width="120"
+        height="24"
+        rx="2"
+      />
+      <text
+        class="drag-handle-text"
+        x="4"
+        y="16"
+      >
+        ⋮⋮⋮ Drag to move
+      </text>
+    </g>
+    
+    <!-- Function name area (right side, inline with drag area) -->
+    <g class="function-name-area" transform="translate(136, 8)">
+      @if (editingFunctionName() === node.id) {
+        <foreignObject 
+          x="0" 
+          y="0"
+          [attr.width]="getFunctionNameWidth()" 
+          height="24"
+        >
+          <input
+            class="function-name-input editing"
+            [value]="node.functionName || ''"
+            (input)="onFunctionNameChange($event)"
+            (blur)="onFunctionNameBlur($event)"
+            (keydown)="onFunctionNameKeyDown($event)"
+            placeholder="Function name"
+            autofocus
+          />
+        </foreignObject>
+      } @else {
+        <!-- Function name display background -->
+        <rect
+          class="function-name-bg"
+          x="0"
+          y="0"
+          [attr.width]="getFunctionNameWidth()"
+          height="24"
+          rx="3"
+        />
+        
+        <!-- SVG text clipping for overflow handling -->
+        <defs>
+          <clipPath [id]="'function-name-clip-' + node.id">
+            <rect
+              x="0"
+              y="0"
+              [attr.width]="getFunctionNameWidth() - 8"
+              height="24"
+            />
+          </clipPath>
+        </defs>
+        
+        <!-- Function name text with clipping -->
+        <text
+          class="function-name-display"
+          x="4"
+          y="16"
+          [attr.clip-path]="'url(#function-name-clip-' + node.id + ')'"
+        >
+          {{ node.functionName || 'Unnamed Function' }}
+        </text>
+      }
+    </g>
+    
+    <!-- Control buttons area (right edge) -->
+    <g class="control-buttons" [attr.transform]="'translate(' + (getWidth() - 50) + ', 8)'">
+      <!-- Edit function name button -->
+      <g 
+        class="edit-name-btn"
+        transform="translate(0, 0)"
+        (click)="toggleFunctionNameEdit()"
+      >
+        <rect
+          class="button-bg"
+          x="0"
+          y="0"
+          width="18"
+          height="18"
+          rx="3"
+        />
+        <text
+          class="button-icon"
+          x="9"
+          y="12"
+          text-anchor="middle"
+        >
+          ✏️
+        </text>
+      </g>
+      
+      <!-- Edit arguments button -->
+      <g 
+        class="edit-args-btn"
+        transform="translate(25, 0)"
+        (click)="toggleArgumentsEdit()"
+      >
+        <rect
+          class="button-bg"
+          x="0"
+          y="0"
+          width="18"
+          height="18"
+          rx="3"
+        />
+        <text
+          class="button-icon"
+          x="9"
+          y="12"
+          text-anchor="middle"
+        >
+          ⚙️
+        </text>
+      </g>
+    </g>
+  </g>
+  
+  <!-- Function body area (nested structure) -->
+  <g class="function-body" [attr.transform]="'translate(0, ' + getFunctionBodyY() + ')'">
+    <!-- Body background -->
+    <rect
+      class="function-body-bg"
+      x="0"
+      y="0"
+      [attr.width]="getWidth()"
+      [attr.height]="getFunctionBodyHeight()"
+      rx="4"
+      ry="4"
+    />
+    
+    <!-- Interactive overlay for body clicks -->
+    <rect
+      class="node-body-edit-area"
+      x="0"
+      y="0"
+      [attr.width]="getWidth()"
+      [attr.height]="getFunctionBodyHeight()"
+      (click)="onNodeBodyClick($event)"
+      (mousedown)="onBodyAreaMouseDown($event)"
+    />
+    
+    <!-- Argument editing interface (nested inside body) -->
+    @if (editingArguments() === node.id) {
+      <g class="arguments-editor-wrapper" transform="translate(8, -55)">
+        <rect
+          class="arguments-editor-bg"
+          x="0"
+          y="0"
+          [attr.width]="getWidth() - 16"
+          height="100"
+          rx="4"
+        />
+        <foreignObject 
+          x="0" 
+          y="0"
+          [attr.width]="getWidth() - 16" 
+          height="100"
+        >
+          <div class="arguments-editor">
+            <div class="arguments-title">Arguments:</div>
+            @for (input of (node.inputs || []); track input.id; let i = $index) {
+              <div class="argument-row">
+                <span class="argument-number">{{ i + 1 }}.</span>
+                <input
+                  class="argument-input"
+                  [value]="input.label"
+                  (input)="onArgumentNameChange($event, i)"
+                  placeholder="arg{{ i + 1 }}"
+                />
+                <button 
+                  type="button"
+                  class="remove-argument-btn"
+                  (click)="removeArgument(i)"
+                  [disabled]="(node.inputs || []).length <= 1"
+                  title="Remove argument"
+                >×</button>
+              </div>
+            }
+            <div class="argument-actions">
+              <button 
+                type="button"
+                class="add-argument-btn"
+                (click)="addArgument()"
+              >+ Add Argument</button>
+              <button 
+                type="button"
+                class="done-btn"
+                (click)="closeArgumentsEdit()"
+              >Done</button>
+            </div>
+          </div>
+        </foreignObject>
+      </g>
+    }
+    
+    <!-- Code editor area (nested inside body) -->
+    <g class="code-editor-area" transform="translate(8, 5)">
+      <!-- Code editor background -->
+      <rect
+        class="code-editor-bg"
+        x="0"
+        y="0"
+        [attr.width]="getWidth() - 16"
+        [attr.height]="getCodeEditorHeight()"
+        rx="3"
+      />
+      
+      <!-- Function Code Editor -->
+      <foreignObject 
+        x="0" 
+        y="0"
+        [attr.width]="getWidth() - 16" 
+        [attr.height]="getCodeEditorHeight()"
+      >
+        <textarea
+          #codeEditor
+          class="code-editor"
+          [class.editing]="isEditing"
+          [value]="node.customCode || ''"
+          (input)="onCodeChange($event)"
+          (blur)="onEditorBlur($event)"
+          (keydown)="onCodeEditorKeyDown($event)"
+          (click)="onTextAreaClick($event)"
+          [readonly]="!isEditing"
+          placeholder=""
+          [attr.autofocus]="isEditing ? true : null"
+          [style.pointer-events]="isEditing ? 'all' : 'none'"
+        ></textarea>
+      </foreignObject>
+    </g>
+  </g>
+  
+  <!-- Edit hint for function nodes -->
+  @if (node && !isEditing) {
+    <text
+      class="edit-hint"
+      x="8"
+      [attr.y]="getHeight() - 5"
+    >
+      Click body to edit
+    </text>
+  }
+</app-node-wrapper>

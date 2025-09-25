@@ -1,0 +1,31 @@
+<app-node-wrapper
+  [node]="node"
+  [width]="getWidth()"
+  [height]="getHeight()"
+  [backgroundColor]="getColor()"
+  [isSelected]="isSelected"
+  [isEditing]="isEditing"
+  [isEditMode]="true"
+  (nodeRightClick)="onNodeRightClick($event)"
+  (portMouseDown)="onPortMouseDown($event.event, $event.portId, $event.portType)"
+  (portMouseUp)="onPortMouseUp($event.event, $event.portId, $event.portType)"
+>
+  <!-- Header area for moving -->
+  <rect
+    class="node-header"
+    [attr.width]="getWidth()"
+    height="30"
+    rx="4"
+    ry="4"
+    (mousedown)="onHeaderMouseDown($event)"
+  />
+  
+  <!-- Node title -->
+  <text
+    class="node-title"
+    x="8"
+    y="20"
+  >
+    {{ getDisplayName() }}
+  </text>
+</app-node-wrapper>

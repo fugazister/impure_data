@@ -1,0 +1,205 @@
+/* Function Node Styles */
+
+/* Header Styles */
+.function-header-bg {
+  fill: rgba(156, 39, 176, 0.15);
+  stroke: rgba(156, 39, 176, 0.4);
+  stroke-width: 1;
+  cursor: move;
+}
+
+/* Drag Handle Styles */
+.drag-handle-bg {
+  fill: rgba(156, 39, 176, 0.1);
+  pointer-events: none;
+}
+
+.drag-handle-text {
+  fill: rgba(156, 39, 176, 0.8);
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, Consolas, monospace;
+  font-size: 10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Function Name Styles */
+.function-name-input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid #007acc;
+  border-radius: 3px;
+  padding: 4px;
+  font-family: monospace;
+  font-size: 11px;
+  pointer-events: all;
+}
+
+.function-name-bg {
+  fill: rgba(255, 255, 255, 0.05);
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.function-name-display {
+  fill: white;
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+/* Control Button Styles */
+.edit-name-btn,
+.edit-args-btn {
+  cursor: pointer;
+}
+
+.button-bg {
+  fill: rgba(255, 255, 255, 0.2);
+  stroke: rgba(255, 255, 255, 0.4);
+  stroke-width: 1;
+}
+
+.button-icon {
+  fill: white;
+  font-size: 9px;
+  pointer-events: none;
+}
+
+.edit-args-btn .button-icon {
+  font-size: 8px;
+}
+
+/* Function Body Styles */
+.function-body-bg {
+  fill: rgba(33, 150, 243, 0.05);
+  stroke: rgba(156, 39, 176, 0.3);
+  stroke-width: 1;
+  stroke-dasharray: 2, 2;
+}
+
+.node-body-edit-area {
+  fill: transparent;
+  cursor: text;
+  pointer-events: all;
+}
+
+/* Arguments Editor Styles */
+.arguments-editor-bg {
+  fill: rgba(0, 0, 0, 0.8);
+  stroke: #444;
+  stroke-width: 1;
+}
+
+.arguments-editor {
+  padding: 8px;
+  pointer-events: all;
+}
+
+.arguments-title {
+  color: #ccc;
+  font-size: 12px;
+  margin-bottom: 8px;
+  font-family: monospace;
+}
+
+.argument-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.argument-number {
+  color: #888;
+  font-size: 10px;
+  width: 15px;
+}
+
+.argument-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid #666;
+  border-radius: 3px;
+  padding: 4px;
+  color: white;
+  font-family: monospace;
+  font-size: 11px;
+}
+
+.remove-argument-btn {
+  background: #f44336;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  width: 18px;
+  height: 18px;
+  font-size: 10px;
+  cursor: pointer;
+}
+
+.remove-argument-btn:disabled {
+  background: #666;
+  cursor: not-allowed;
+}
+
+.argument-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.add-argument-btn {
+  background: #4CAF50;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.done-btn {
+  background: #666;
+  color: white;
+  border: none;
+  border-radius: 3px;
+  padding: 4px 8px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+/* Code Editor Styles */
+.code-editor-bg {
+  fill: rgba(0, 0, 0, 0.3);
+  stroke: rgba(255, 255, 255, 0.1);
+  stroke-width: 1;
+  pointer-events: none;
+}
+
+.code-editor {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  border: none;
+  color: white;
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, Consolas, monospace;
+  font-size: 12px;
+  resize: none;
+  outline: none;
+  padding: 4px;
+}
+
+.code-editor.editing {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* Edit Hint Styles */
+.edit-hint {
+  fill: rgba(156, 39, 176, 0.7);
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, Consolas, monospace;
+  font-size: 8px;
+  pointer-events: none;
+  user-select: none;
+}

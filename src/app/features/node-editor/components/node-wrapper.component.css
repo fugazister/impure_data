@@ -1,0 +1,96 @@
+/* Node Wrapper Styles */
+
+/* Node Container */
+.node {
+  cursor: default;
+}
+
+.node.selected {
+  filter: drop-shadow(0 0 8px rgba(0, 122, 204, 0.8));
+}
+
+.node.editing {
+  filter: drop-shadow(0 0 8px rgba(76, 175, 80, 0.8));
+}
+
+.node.execution-mode {
+  opacity: 0.8;
+}
+
+/* Node Background */
+.node-background {
+  stroke: #333;
+  stroke-width: 1;
+  transition: all 0.2s ease;
+}
+
+.node.selected .node-background {
+  stroke: #007acc;
+  stroke-width: 2;
+}
+
+.node.editing .node-background {
+  stroke: #4CAF50;
+  stroke-width: 2;
+}
+
+/* Move Indicator */
+.move-indicator {
+  fill: rgba(255, 255, 255, 0.6);
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, Consolas, monospace;
+  font-size: 10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Port Styles */
+.port {
+  cursor: pointer;
+}
+
+.port-circle {
+  stroke-width: 1;
+  transition: all 0.2s ease;
+}
+
+.input-port-circle {
+  stroke: #333;
+}
+
+.output-port-circle {
+  stroke: #333;
+}
+
+.port-circle:hover {
+  stroke-width: 2;
+  r: 5;
+}
+
+.input-port-circle:hover {
+  stroke: #007acc;
+}
+
+.output-port-circle:hover {
+  stroke: #007acc;
+}
+
+/* Port Labels */
+.port-label {
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, Consolas, monospace;
+  font-size: 10px;
+  pointer-events: none;
+  user-select: none;
+}
+
+.input-port-label {
+  fill: #333;
+}
+
+.output-port-label {
+  fill: #333;
+}
+
+.no-connections-warning {
+  fill: #ff6b6b;
+  font-size: 8px;
+}

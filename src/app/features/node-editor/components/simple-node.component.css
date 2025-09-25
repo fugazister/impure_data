@@ -1,0 +1,21 @@
+/* Simple Node Styles */
+
+/* Header Styles */
+.node-header {
+  fill: rgba(0, 0, 0, 0.2);
+  stroke: none;
+  cursor: move;
+}
+
+.node-header:hover {
+  fill: rgba(0, 0, 0, 0.3);
+}
+
+/* Title Styles */
+.node-title {
+  fill: white;
+  font-family: 'JetBrains Mono', 'Fira Code', Monaco, Consolas, monospace;
+  font-size: 12px;
+  font-weight: bold;
+  pointer-events: none;
+}
