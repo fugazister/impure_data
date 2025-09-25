@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, inject, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, signal, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseNodeComponent } from './base-node.component';
 import { NodeWrapperComponent } from './node-wrapper.component';
@@ -10,7 +10,8 @@ import { NodeTypeLibrary } from '../../node-palette/node-library.service';
   standalone: true,
   imports: [CommonModule, NodeWrapperComponent],
   templateUrl: './function-node.component.html',
-  styleUrl: './function-node.component.css'
+  styleUrl: './function-node.component.css',
+  schemas: [NO_ERRORS_SCHEMA]
 })
 export class FunctionNodeComponent extends BaseNodeComponent {
   @Input() editingFunctionName = signal<string | null>(null);
