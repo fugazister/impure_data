@@ -1,4 +1,4 @@
-import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseNodeComponent } from '../base/base-node.component';
 import { NodeWrapperComponent } from '../wrapper/node-wrapper.component';
@@ -9,8 +9,7 @@ import { NodeTypeLibrary } from '../../../node-palette/node-library.service';
   standalone: true,
   imports: [CommonModule, NodeWrapperComponent],
   templateUrl: './simple-node.component.html',
-  styleUrl: './simple-node.component.css',
-  schemas: [NO_ERRORS_SCHEMA]
+  styleUrl: './simple-node.component.css'
 })
 export class SimpleNodeComponent extends BaseNodeComponent {
   

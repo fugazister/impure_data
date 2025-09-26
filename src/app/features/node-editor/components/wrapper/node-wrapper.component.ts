@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, TemplateRef, ViewChild, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component, Input, Output, EventEmitter, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Node } from '../../../../core';
 
@@ -11,8 +11,7 @@ import { Node } from '../../../../core';
   standalone: true,
   imports: [CommonModule],
   templateUrl: './node-wrapper.component.html',
-  styleUrl: './node-wrapper.component.css',
-  schemas: [NO_ERRORS_SCHEMA]
+  styleUrl: './node-wrapper.component.css'
 })
 export class NodeWrapperComponent {
   @Input({ required: true }) node!: Node;

@@ -11,9 +11,9 @@
   (portMouseUp)="onPortMouseUp($event.event, $event.portId, $event.portType)"
 >
   <!-- Function Header Group with inline layout -->
-  <g class="function-header" transform="translate(0, 0)">
+  <svg:g class="function-header" transform="translate(0, 0)">
     <!-- Main header background -->
-    <rect
+    <svg:rect
       class="function-header-bg"
       x="0"
       y="0"
@@ -25,8 +25,8 @@
     />
     
     <!-- Drag handle area (left side, inline) -->
-    <g class="drag-handle-area" transform="translate(8, 8)">
-      <rect
+    <svg:g class="drag-handle-area" transform="translate(8, 8)">
+      <svg:rect
         class="drag-handle-bg"
         x="0"
         y="0"
@@ -34,17 +34,17 @@
         height="24"
         rx="2"
       />
-      <text
+      <svg:text
         class="drag-handle-text"
         x="4"
         y="16"
       >
         ⋮⋮⋮ Drag to move
-      </text>
-    </g>
+      </svg:text>
+    </svg:g>
     
     <!-- Function name area (right side, inline with drag area) -->
-    <g class="function-name-area" transform="translate(136, 8)">
+    <svg:g class="function-name-area" transform="translate(136, 8)">
       @if (editingFunctionName() === node.id) {
         <foreignObject 
           x="0" 
@@ -64,7 +64,7 @@
         </foreignObject>
       } @else {
         <!-- Function name display background -->
-        <rect
+        <svg:rect
           class="function-name-bg"
           x="0"
           y="0"
@@ -74,38 +74,38 @@
         />
         
         <!-- SVG text clipping for overflow handling -->
-        <defs>
-          <clipPath [id]="'function-name-clip-' + node.id">
-            <rect
+        <svg:defs>
+          <svg:clipPath [id]="'function-name-clip-' + node.id">
+            <svg:rect
               x="0"
               y="0"
               [attr.width]="getFunctionNameWidth() - 8"
               height="24"
             />
-          </clipPath>
-        </defs>
+          </svg:clipPath>
+        </svg:defs>
         
         <!-- Function name text with clipping -->
-        <text
+        <svg:text
           class="function-name-display"
           x="4"
           y="16"
           [attr.clip-path]="'url(#function-name-clip-' + node.id + ')'"
         >
           {{ node.functionName || 'Unnamed Function' }}
-        </text>
+        </svg:text>
       }
-    </g>
+    </svg:g>
     
     <!-- Control buttons area (right edge) -->
-    <g class="control-buttons" [attr.transform]="'translate(' + (getWidth() - 50) + ', 8)'">
+    <svg:g class="control-buttons" [attr.transform]="'translate(' + (getWidth() - 50) + ', 8)'">
       <!-- Edit function name button -->
-      <g 
+      <svg:g 
         class="edit-name-btn"
         transform="translate(0, 0)"
         (click)="toggleFunctionNameEdit()"
       >
-        <rect
+        <svg:rect
           class="button-bg"
           x="0"
           y="0"
@@ -113,23 +113,23 @@
           height="18"
           rx="3"
         />
-        <text
+        <svg:text
           class="button-icon"
           x="9"
           y="12"
           text-anchor="middle"
         >
           ✏️
-        </text>
-      </g>
+        </svg:text>
+      </svg:g>
       
       <!-- Edit arguments button -->
-      <g 
+      <svg:g 
         class="edit-args-btn"
         transform="translate(25, 0)"
         (click)="toggleArgumentsEdit()"
       >
-        <rect
+        <svg:rect
           class="button-bg"
           x="0"
           y="0"
@@ -137,22 +137,22 @@
           height="18"
           rx="3"
         />
-        <text
+        <svg:text
           class="button-icon"
           x="9"
           y="12"
           text-anchor="middle"
         >
           ⚙️
-        </text>
-      </g>
-    </g>
-  </g>
+        </svg:text>
+      </svg:g>
+    </svg:g>
+  </svg:g>
   
   <!-- Function body area (nested structure) -->
-  <g class="function-body" [attr.transform]="'translate(0, ' + getFunctionBodyY() + ')'">
+  <svg:g class="function-body" [attr.transform]="'translate(0, ' + getFunctionBodyY() + ')'">
     <!-- Body background -->
-    <rect
+    <svg:rect
       class="function-body-bg"
       x="0"
       y="0"
@@ -163,7 +163,7 @@
     />
     
     <!-- Interactive overlay for body clicks -->
-    <rect
+    <svg:rect
       class="node-body-edit-area"
       x="0"
       y="0"
@@ -175,8 +175,8 @@
     
     <!-- Argument editing interface (nested inside body) -->
     @if (editingArguments() === node.id) {
-      <g class="arguments-editor-wrapper" transform="translate(8, -55)">
-        <rect
+      <svg:g class="arguments-editor-wrapper" transform="translate(8, -55)">
+        <svg:rect
           class="arguments-editor-bg"
           x="0"
           y="0"
@@ -224,13 +224,13 @@
             </div>
           </div>
         </foreignObject>
-      </g>
+      </svg:g>
     }
     
     <!-- Code editor area (nested inside body) -->
-    <g class="code-editor-area" transform="translate(8, 5)">
+    <svg:g class="code-editor-area" transform="translate(8, 5)">
       <!-- Code editor background -->
-      <rect
+      <svg:rect
         class="code-editor-bg"
         x="0"
         y="0"
@@ -261,17 +261,17 @@
           [style.pointer-events]="isEditing ? 'all' : 'none'"
         ></textarea>
       </foreignObject>
-    </g>
-  </g>
+    </svg:g>
+  </svg:g>
   
   <!-- Edit hint for function nodes -->
   @if (node && !isEditing) {
-    <text
+    <svg:text
       class="edit-hint"
       x="8"
       [attr.y]="getHeight() - 5"
     >
       Click body to edit
-    </text>
+    </svg:text>
   }
 </app-node-wrapper>

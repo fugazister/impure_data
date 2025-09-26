@@ -1,4 +1,4 @@
-import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseOutputNodeComponent } from '../base/base-output-node.component';
 import { NodeWrapperComponent } from '../wrapper/node-wrapper.component';
@@ -8,8 +8,7 @@ import { NodeWrapperComponent } from '../wrapper/node-wrapper.component';
   standalone: true,
   imports: [CommonModule, NodeWrapperComponent],
   templateUrl: './log-node.component.html',
-  styleUrl: '../base/base-output-node.component.css',
-  schemas: [NO_ERRORS_SCHEMA]
+  styleUrl: '../base/base-output-node.component.css'
 })
 export class LogNodeComponent extends BaseOutputNodeComponent {
 

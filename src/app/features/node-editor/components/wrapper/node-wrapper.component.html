@@ -1,4 +1,4 @@
-<g 
+<svg:g 
   class="node"
   [class.selected]="isSelected"
   [class.editing]="isEditing"
@@ -7,7 +7,7 @@
   (contextmenu)="onNodeRightClick($event)"
 >
   <!-- Node background -->
-  <rect
+  <svg:rect
     class="node-background"
     [attr.width]="width"
     [attr.height]="height"
@@ -20,18 +20,18 @@
   <ng-content></ng-content>
   
   <!-- Move handle indicator -->
-  <text
+  <svg:text
     class="move-indicator"
     [attr.x]="width - 20"
     y="20"
   >
     ⋮⋮
-  </text>
+  </svg:text>
   
   <!-- Input ports -->
   @for (input of (node.inputs || []); track input.id; let i = $index) {
-    <g class="port input-port" [attr.transform]="'translate(0,' + getPortY(i) + ')'">
-      <circle
+    <svg:g class="port input-port" [attr.transform]="'translate(0,' + getPortY(i) + ')'">
+      <svg:circle
         class="port-circle input-port-circle"
         [attr.cx]="0"
         [attr.cy]="0"
@@ -41,7 +41,7 @@
         (mousedown)="onPortMouseDown($event, input.id, 'input')"
         (mouseup)="onPortMouseUp($event, input.id, 'input')"
       />
-      <text
+      <svg:text
         class="port-label input-port-label"
         x="8"
         y="3"
@@ -49,16 +49,16 @@
       >
         {{ input.label }}
         @if (node.type === 'function' && (node.inputs || []).length > 1) {
-          <tspan class="no-connections-warning"> (no connections)</tspan>
+          <svg:tspan class="no-connections-warning"> (no connections)</svg:tspan>
         }
-      </text>
-    </g>
+      </svg:text>
+    </svg:g>
   }
   
   <!-- Output ports -->
   @for (output of (node.outputs || []); track output.id; let i = $index) {
-    <g class="port output-port" [attr.transform]="'translate(' + width + ',' + getPortY(i) + ')'">
-      <circle
+    <svg:g class="port output-port" [attr.transform]="'translate(' + width + ',' + getPortY(i) + ')'">
+      <svg:circle
         class="port-circle output-port-circle"
         [attr.cx]="0"
         [attr.cy]="0"
@@ -67,14 +67,14 @@
         (mousedown)="onPortMouseDown($event, output.id, 'output')"
         (mouseup)="onPortMouseUp($event, output.id, 'output')"
       />
-      <text
+      <svg:text
         class="port-label output-port-label"
         [attr.x]="-8"
         y="3"
         text-anchor="end"
       >
         {{ output.label }}
-      </text>
-    </g>
+      </svg:text>
+    </svg:g>
   }
-</g>
+</svg:g>

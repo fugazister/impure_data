@@ -11,7 +11,7 @@
   (portMouseUp)="onPortMouseUp($event.event, $event.portId, $event.portType)"
 >
   <!-- Header area for moving -->
-  <rect
+  <svg:rect
     class="node-header"
     [attr.width]="getWidth()"
     height="30"
@@ -21,11 +21,11 @@
   />
   
   <!-- Node title -->
-  <text
+  <svg:text
     class="node-title"
     x="8"
     y="20"
   >
     {{ getDisplayName() }}
-  </text>
+  </svg:text>
 </app-node-wrapper>
