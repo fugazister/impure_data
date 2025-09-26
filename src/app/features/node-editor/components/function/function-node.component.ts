@@ -1,9 +1,9 @@
 import { Component, Input, Output, EventEmitter, inject, signal, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BaseNodeComponent } from './base-node.component';
-import { NodeWrapperComponent } from './node-wrapper.component';
-import { Node } from '../../../core';
-import { NodeTypeLibrary } from '../../node-palette/node-library.service';
+import { BaseNodeComponent } from '../base/base-node.component';
+import { NodeWrapperComponent } from '../wrapper/node-wrapper.component';
+import { Node } from '../../../../core';
+import { NodeTypeLibrary } from '../../../node-palette/node-library.service';
 
 @Component({
   selector: 'app-function-node',

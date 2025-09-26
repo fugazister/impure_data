@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA, Component } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { BaseOutputNodeComponent } from './base-output-node.component';
-import { NodeTypeLibrary } from '../../node-palette/node-library.service';
+import { NodeTypeLibrary } from '../../../node-palette/node-library.service';
 
 // Create a concrete implementation for testing the abstract class
 @Component({

@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { OutputNodeComponent } from './output-node.component';
-import { NodeTypeLibrary } from '../../node-palette/node-library.service';
+import { NodeTypeLibrary } from '../../../node-palette/node-library.service';
 
 describe('OutputNodeComponent', () => {
   let component: OutputNodeComponent;

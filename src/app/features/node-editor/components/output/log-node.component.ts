@@ -1,14 +1,14 @@
 import { Component, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { BaseOutputNodeComponent } from './base-output-node.component';
-import { NodeWrapperComponent } from './node-wrapper.component';
+import { BaseOutputNodeComponent } from '../base/base-output-node.component';
+import { NodeWrapperComponent } from '../wrapper/node-wrapper.component';
 
 @Component({
   selector: 'app-log-node',
   standalone: true,
   imports: [CommonModule, NodeWrapperComponent],
   templateUrl: './log-node.component.html',
-  styleUrl: './base-output-node.component.css',
+  styleUrl: '../base/base-output-node.component.css',
   schemas: [NO_ERRORS_SCHEMA]
 })
 export class LogNodeComponent extends BaseOutputNodeComponent {

@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseNodeComponent } from './base-node.component';
-import { NodeWrapperComponent } from './node-wrapper.component';
-import { NodeTypeLibrary } from '../../node-palette/node-library.service';
+import { NodeWrapperComponent } from '../wrapper/node-wrapper.component';
+import { NodeTypeLibrary } from '../../../node-palette/node-library.service';
 
 @Component({
   selector: 'app-base-output-node',

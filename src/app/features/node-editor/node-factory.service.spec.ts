@@ -1,8 +1,8 @@
 import { ViewContainerRef, ComponentRef, Type } from '@angular/core';
 import { NodeFactoryService } from './node-factory.service';
-import { FunctionNodeComponent } from './components/function-node.component';
-import { SimpleNodeComponent } from './components/simple-node.component';
-import { BaseNodeComponent } from './components/base-node.component';
+import { FunctionNodeComponent } from './components/function/function-node.component';
+import { SimpleNodeComponent } from './components/simple/simple-node.component';
+import { BaseNodeComponent } from './components/base/base-node.component';
 import { Node } from '../../core/node.model';
 
 describe('NodeFactoryService', () => {

@@ -1,10 +1,10 @@
 import { Injectable, ComponentRef, ViewContainerRef, Type } from '@angular/core';
 import { Node } from '../../core';
-import { BaseNodeComponent } from './components/base-node.component';
-import { FunctionNodeComponent } from './components/function-node.component';
-import { SimpleNodeComponent } from './components/simple-node.component';
-import { LogNodeComponent } from './components/log-node.component';
-import { OutputNodeComponent } from './components/output-node.component';
+import { BaseNodeComponent } from './components/base/base-node.component';
+import { FunctionNodeComponent } from './components/function/function-node.component';
+import { SimpleNodeComponent } from './components/simple/simple-node.component';
+import { LogNodeComponent } from './components/output/log-node.component';
+import { OutputNodeComponent } from './components/output/output-node.component';
 
 export interface NodeComponentInfo {
   component: ComponentRef<BaseNodeComponent>;

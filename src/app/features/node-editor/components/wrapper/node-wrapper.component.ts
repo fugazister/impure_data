@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, TemplateRef, ViewChild, NO_ERRORS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Node } from '../../../core';
+import { Node } from '../../../../core';
 
 /**
  * Common node wrapper component that provides the shared SVG structure

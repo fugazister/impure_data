@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
-import { Node } from '../../../core';
-import { NodeEditorService } from '../node-editor.service';
+import { Node } from '../../../../core';
+import { NodeEditorService } from '../../node-editor.service';
 
 /**
  * Base abstract class for all node components

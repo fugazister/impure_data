@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideZonelessChangeDetection } from '@angular/core';
 import { LogNodeComponent } from './log-node.component';
-import { Node } from '../../../core/node.model';
-import { NodeTypeLibrary } from '../../node-palette/node-library.service';
+import { Node } from '../../../../core/node.model';
+import { NodeTypeLibrary } from '../../../node-palette/node-library.service';
 
 describe('LogNodeComponent', () => {
   let component: LogNodeComponent;
