@@ -227,42 +227,6 @@ describe('NodeCanvasComponent', async () => {
       }));
     });
 
-    it('should create console log node at context menu position', () => {
-      // Arrange
-      const menuPosition = { x: 300, y: 200 };
-      component.contextMenu.set({
-        visible: true,
-        x: menuPosition.x,
-        y: menuPosition.y
-      });
-      
-      const mockLogNode = {
-        id: 'new-log-node',
-        type: 'io.console',
-        position: { x: 300, y: 200 },
-        inputs: [
-          { id: 'input-1', type: 'input' as const, dataType: 'any' as const, label: 'value', connected: false }
-        ],
-        outputs: []
-      };
-      nodeEditorService.addNode.and.returnValue(mockLogNode);
-
-      // Act
-      component.createLogNode();
-
-      // Assert
-      expect(nodeEditorService.addNode).toHaveBeenCalledWith('io.console', jasmine.any(Object));
-      expect(nodeEditorService.updateNode).toHaveBeenCalledWith(mockLogNode.id, {
-        inputs: [{
-          id: 'input-1',
-          type: 'input' as const,
-          dataType: 'any' as const,
-          label: 'value',
-          connected: false,
-          value: 'Hello, World!'
-        }]
-      });
-    });
   });
 
   describe('Text Output Node Creation', () => {

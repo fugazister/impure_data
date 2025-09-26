@@ -294,35 +294,6 @@ export class NodeCanvasComponent implements AfterViewInit {
     this.hideContextMenu();
   }
 
-  createLogNode() {
-    // Only allow node creation in edit mode
-    if (!this.nodeEditor.isEditMode()) {
-      this.hideContextMenu();
-      return;
-    }
-    
-    const menu = this.contextMenu();
-    if (!menu.visible) return;
-
-    // Convert screen coordinates to canvas coordinates
-    const canvasPosition = this.screenToCanvas({ x: menu.x, y: menu.y });
-    
-    // Create a new console.log node using the service
-    const logNode = this.nodeEditor.addNode('io.console', canvasPosition);
-    
-    // Set a default input value to show something meaningful
-    if (logNode.inputs && logNode.inputs.length > 0) {
-      this.nodeEditor.updateNode(logNode.id, {
-        inputs: [{
-          ...logNode.inputs[0],
-          value: 'Hello, World!'
-        }]
-      });
-    }
-    
-    this.hideContextMenu();
-  }
-
   createTextOutputNode() {
     // Only allow creation in edit mode
     if (!this.nodeEditor.isEditMode()) {
