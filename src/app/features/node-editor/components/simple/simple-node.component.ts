@@ -22,13 +22,7 @@ export class SimpleNodeComponent extends BaseNodeComponent {
   }
 
   getColor(): string {
-    const nodeType = NodeTypeLibrary.getNodeType(this.node.type);
-    return nodeType?.color || '#666';
-  }
-
-  getDisplayName(): string {
-    const nodeType = NodeTypeLibrary.getNodeType(this.node.type);
-    return nodeType?.name || 'Unknown';
+    return this.getNodeColor();
   }
 
   onHeaderMouseDown(event: MouseEvent): void {

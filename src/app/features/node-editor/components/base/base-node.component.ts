@@ -1,6 +1,7 @@
-import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
+import { Component, Input, Output, EventEmitter, inject, computed, signal } from '@angular/core';
 import { Node } from '../../../../core';
 import { NodeEditorService } from '../../node-editor.service';
+import { NodeTypeLibrary } from '../../../node-palette/node-library.service';
 
 /**
  * Base abstract class for all node components
@@ -11,10 +12,30 @@ import { NodeEditorService } from '../../node-editor.service';
   standalone: true
 })
 export abstract class BaseNodeComponent {
-  @Input({ required: true }) node!: Node;
+  private _node!: Node;
+  
+  @Input({ required: true }) 
+  get node(): Node { return this._node; }
+  set node(value: Node) {
+    this._node = value;
+    this.nodeSignal.set(value);
+  }
+  
   @Input() isSelected: boolean = false;
   @Input() isEditing: boolean = false;
   @Input() canvasTransform: string = '';
+
+  // Cached node type to avoid redundant lookups
+  protected nodeSignal = signal<Node | null>(null);
+  protected nodeType = computed(() => {
+    const currentNode = this.nodeSignal();
+    return currentNode ? NodeTypeLibrary.getNodeType(currentNode.type) : null;
+  });
+
+  // Computed signals for template optimization
+  public nodeWidth = computed(() => this.getWidth());
+  public nodeHeight = computed(() => this.getHeight());
+  public nodeColor = computed(() => this.getColor());
 
   // Events that nodes can emit
   @Output() nodeSelect = new EventEmitter<string>();
@@ -39,6 +60,17 @@ export abstract class BaseNodeComponent {
 
   protected getPortsLength(ports: any[] | undefined): number {
     return ports ? ports.length : 0;
+  }
+
+  // Cached common methods to avoid redundant NodeTypeLibrary lookups
+  getDisplayName(): string {
+    const type = this.nodeType();
+    return type?.name || 'Unknown';
+  }
+
+  getNodeColor(): string {
+    const type = this.nodeType();
+    return type?.color || '#666';
   }
 
   // Common event handlers

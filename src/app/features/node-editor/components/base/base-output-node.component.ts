@@ -28,13 +28,13 @@ export abstract class BaseOutputNodeComponent extends BaseNodeComponent {
   }
 
   getColor(): string {
-    const nodeType = NodeTypeLibrary.getNodeType(this.node.type);
-    return nodeType?.color || '#795548';
+    const color = this.getNodeColor();
+    return (color && color !== '#666') ? color : '#795548';
   }
 
-  getDisplayName(): string {
-    const nodeType = NodeTypeLibrary.getNodeType(this.node.type);
-    return nodeType?.name || 'Output Node';
+  override getDisplayName(): string {
+    const name = super.getDisplayName();
+    return (name && name !== 'Unknown') ? name : 'Output Node';
   }
 
   getInputValue(): string {

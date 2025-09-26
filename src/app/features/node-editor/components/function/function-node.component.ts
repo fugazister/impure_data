@@ -45,8 +45,7 @@ export class FunctionNodeComponent extends BaseNodeComponent {
   }
 
   getColor(): string {
-    const nodeType = NodeTypeLibrary.getNodeType(this.node.type);
-    return nodeType?.color || '#666';
+    return this.getNodeColor();
   }
 
   getFunctionHeaderHeight(): number {
