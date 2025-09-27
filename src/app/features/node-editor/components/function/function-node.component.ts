@@ -5,7 +5,7 @@ import { BaseNodeComponent } from '../base/base-node.component';
 import { NodeWrapperComponent } from '../wrapper/node-wrapper.component';
 import { Node } from '../../../../core';
 import { NodeTypeLibrary } from '../../../node-palette/node-library.service';
-import { SvgInputComponent, SvgButtonComponent } from '../../../../shared/svg-ui';
+import { SvgInputComponent, SvgButtonComponent } from 'ui-kit';
 
 @Component({
   selector: 'app-function-node',

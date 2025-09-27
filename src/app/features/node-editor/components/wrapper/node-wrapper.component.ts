@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Node } from '../../../../core';
-import { SvgPanelComponent, SvgPortComponent } from '../../../../shared/svg-ui';
+import { SvgPanelComponent, SvgPortComponent } from 'ui-kit';
 
 /**
  * Common node wrapper component that provides the shared SVG structure

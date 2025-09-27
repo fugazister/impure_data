@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { NodeEditorService } from './node-editor.service';
 import { NodeTypeLibrary } from '../node-palette/node-library.service';
 import { Node, Connection, Position } from '../../core';
-import { SvgInputComponent, SvgButtonComponent } from '../../shared/svg-ui';
+import { SvgInputComponent, SvgButtonComponent } from 'ui-kit';
 
 @Component({
   selector: 'app-node-canvas',
