@@ -1,74 +1,14 @@
 import { Component, Input, Output, EventEmitter, forwardRef, ElementRef, ViewChild, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { SVGInputSize, SVGInputVariant, SVGPosition } from '../types';
-import { svgTheme } from '../theme';
+import { SVGInputSize, SVGInputVariant, SVGPosition } from '../../types';
+import { svgTheme } from '../../theme';
 
 @Component({
   selector: '[svg-input]', // Attribute selector for SVG use
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <svg:g 
-      class="svg-input"
-      [class]="inputClasses"
-      [attr.transform]="transform"
-    >
-      <!-- Background rect -->
-      <svg:rect
-        class="svg-input-bg"
-        x="0"
-        y="0"
-        [attr.width]="width"
-        [attr.height]="height"
-        [attr.fill]="backgroundColor"
-        [attr.stroke]="borderColor"
-        [attr.stroke-width]="borderWidth"
-        [attr.rx]="borderRadius"
-        (click)="focusInput()"
-      />
-      
-      <!-- Input text display -->
-      <svg:text
-        class="svg-input-text"
-        [attr.x]="textX"
-        [attr.y]="textY"
-        [attr.font-size]="fontSize"
-        [attr.fill]="textColor"
-        [attr.text-anchor]="'start'"
-        (click)="focusInput()"
-      >
-        {{ displayValue || placeholder }}
-      </svg:text>
-      
-      <!-- Cursor (when focused) -->
-      @if (isFocused) {
-        <svg:line
-          class="svg-input-cursor"
-          [attr.x1]="cursorX"
-          [attr.y1]="cursorY1"
-          [attr.x2]="cursorX"
-          [attr.y2]="cursorY2"
-          [attr.stroke]="cursorColor"
-          [attr.stroke-width]="1"
-        />
-      }
-    </svg:g>
-    
-    <!-- Hidden HTML input for actual text input -->
-    <input
-      #hiddenInput
-      type="text"
-      class="svg-input-hidden"
-      [value]="value"
-      [disabled]="disabled"
-      [placeholder]="placeholder"
-      (input)="onInput($event)"
-      (focus)="onFocus()"
-      (blur)="onBlur()"
-      (keydown)="onKeydown($event)"
-    />
-  `,
+  templateUrl: './svg-input.component.html',
   styleUrl: './svg-input.component.css',
   providers: [
     {

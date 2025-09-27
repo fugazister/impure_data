@@ -1,51 +1,13 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SVGPortType, SVGPortState, SVGPosition } from '../types';
-import { svgTheme } from '../theme';
+import { SVGPortType, SVGPortState, SVGPosition } from '../../types';
+import { svgTheme } from '../../theme';
 
 @Component({
   selector: '[svg-port]', // Attribute selector for SVG use
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <svg:g 
-      class="svg-port"
-      [class]="portClasses"
-      [attr.transform]="transform"
-    >
-      <!-- Port circle -->
-      <svg:circle
-        class="svg-port-circle"
-        cx="0"
-        cy="0"
-        [attr.r]="radius"
-        [attr.fill]="fillColor"
-        [attr.stroke]="strokeColor"
-        [attr.stroke-width]="strokeWidth"
-        (mousedown)="onMouseDown.emit({ event: $event, portId: portId, portType: type })"
-        (mouseup)="onMouseUp.emit({ event: $event, portId: portId, portType: type })"
-        (mouseenter)="onMouseEnter.emit({ event: $event, portId: portId, portType: type })"
-        (mouseleave)="onMouseLeave.emit({ event: $event, portId: portId, portType: type })"
-      />
-      
-      <!-- Port label -->
-      @if (showLabel && label) {
-        <svg:text
-          class="svg-port-label"
-          [attr.x]="labelX"
-          [attr.y]="labelY"
-          [attr.text-anchor]="labelAnchor"
-          [attr.font-size]="10"
-          [attr.fill]="labelColor"
-        >
-          {{ label }}
-          @if (showConnectionWarning && !connected) {
-            <svg:tspan class="connection-warning" fill="#FF9800" font-size="9"> (no connections)</svg:tspan>
-          }
-        </svg:text>
-      }
-    </svg:g>
-  `,
+  templateUrl: './svg-port.component.html',
   styleUrl: './svg-port.component.css'
 })
 export class SvgPortComponent {

@@ -1,21 +1,12 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SvgButtonComponent } from './svg-button.component';
+import { SvgButtonComponent } from '../svg-button/svg-button.component';
 
 @Component({
   selector: 'ui-button',
   standalone: true,
   imports: [CommonModule, SvgButtonComponent],
-  template: `
-    <svg:g svg-button
-      [variant]="variant"
-      [size]="size"
-      [position]="position"
-      [disabled]="disabled"
-      (onClick)="onClick.emit($event)">
-      <ng-content></ng-content>
-    </svg:g>
-  `
+  templateUrl: './ui-button.component.html'
 })
 export class UiButtonComponent {
   @Input() variant: 'primary' | 'secondary' | 'ghost' | 'danger' = 'primary';

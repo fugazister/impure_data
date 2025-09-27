@@ -5,18 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'ui-panel-header-title',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <svg:text
-      class="ui-panel-header-title"
-      [attr.x]="x"
-      [attr.y]="y"
-      fill="white"
-      font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
-      font-size="12"
-      font-weight="bold">
-      <ng-content></ng-content>
-    </svg:text>
-  `
+  templateUrl: './ui-panel-header-title.component.html'
 })
 export class UiPanelHeaderTitleComponent {
   @Input() x: number = 8;

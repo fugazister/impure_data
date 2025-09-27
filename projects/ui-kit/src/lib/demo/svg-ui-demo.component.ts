@@ -1,10 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { SvgButtonComponent } from '../components/svg-button.component';
-import { SvgPortComponent } from '../components/svg-port.component';
-import { SvgInputComponent } from '../components/svg-input.component';
-import { SvgPanelComponent } from '../components/svg-panel.component';
+import { SvgButtonComponent } from '../components/svg-button/svg-button.component';
+import { SvgPortComponent } from '../components/svg-port/svg-port.component';
+import { SvgInputComponent } from '../components/svg-input/svg-input.component';
+import { SvgPanelComponent } from '../components/svg-panel/svg-panel.component';
 import { SvgUIService } from '../services/svg-ui.service';
 import { SVGPosition } from '../types';
 

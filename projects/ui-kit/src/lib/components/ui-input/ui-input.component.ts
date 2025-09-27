@@ -1,26 +1,13 @@
 import { Component, Input, Output, EventEmitter, forwardRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule, ControlValueAccessor, NG_VALUE_ACCESSOR } from '@angular/forms';
-import { SvgInputComponent } from './svg-input.component';
+import { SvgInputComponent } from '../svg-input/svg-input.component';
 
 @Component({
   selector: 'ui-input',
   standalone: true,
   imports: [CommonModule, FormsModule, SvgInputComponent],
-  template: `
-    <svg:g svg-input
-      [size]="size"
-      [variant]="variant"
-      [position]="position"
-      [width]="width"
-      [placeholder]="placeholder"
-      [disabled]="disabled"
-      [ngModel]="value"
-      (ngModelChange)="onValueChange($event)"
-      (onEnter)="onEnter.emit($event)"
-      (onEscape)="onEscape.emit()">
-    </svg:g>
-  `,
+  templateUrl: './ui-input.component.html',
   providers: [
     {
       provide: NG_VALUE_ACCESSOR,

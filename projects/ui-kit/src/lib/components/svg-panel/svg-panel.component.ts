@@ -1,105 +1,13 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SVGPanelVariant, SVGPosition } from '../types';
-import { svgTheme } from '../theme';
+import { SVGPanelVariant, SVGPosition } from '../../types';
+import { svgTheme } from '../../theme';
 
 @Component({
   selector: '[svg-panel]', // Attribute selector for SVG use
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <svg:g 
-      class="svg-panel"
-      [class]="panelClasses"
-      [attr.transform]="transform"
-    >
-      <!-- Background rect -->
-      <svg:rect
-        class="svg-panel-bg"
-        x="0"
-        y="0"
-        [attr.width]="width"
-        [attr.height]="height"
-        [attr.fill]="backgroundColor"
-        [attr.stroke]="borderColor"
-        [attr.stroke-width]="borderWidth"
-        [attr.rx]="borderRadius"
-        [attr.filter]="shadowFilter"
-      />
-      
-      <!-- Header section -->
-      @if (title || showCloseButton) {
-        <svg:g class="svg-panel-header">
-          <!-- Header background -->
-          <svg:rect
-            class="svg-panel-header-bg"
-            x="0"
-            y="0"
-            [attr.width]="width"
-            [attr.height]="headerHeight"
-            [attr.fill]="headerBackgroundColor"
-            [attr.rx]="borderRadius"
-          />
-          
-          <!-- Title text -->
-          @if (title) {
-            <svg:text
-              class="svg-panel-title"
-              [attr.x]="titleX"
-              [attr.y]="titleY"
-              [attr.font-size]="titleFontSize"
-              [attr.font-weight]="'600'"
-              [attr.fill]="titleColor"
-              [attr.text-anchor]="'start'"
-            >
-              {{ title }}
-            </svg:text>
-          }
-          
-          <!-- Close button -->
-          @if (showCloseButton) {
-            <svg:g
-              class="svg-panel-close-button"
-              [attr.transform]="closeButtonTransform"
-              (click)="onClose()"
-            >
-              <svg:circle
-                cx="0"
-                cy="0"
-                r="8"
-                [attr.fill]="closeButtonColor"
-                [attr.stroke]="closeButtonStroke"
-              />
-              <svg:line
-                x1="-4"
-                y1="-4"
-                x2="4"
-                y2="4"
-                [attr.stroke]="closeIconColor"
-                stroke-width="1.5"
-              />
-              <svg:line
-                x1="4"
-                y1="-4"
-                x2="-4"
-                y2="4"
-                [attr.stroke]="closeIconColor"
-                stroke-width="1.5"
-              />
-            </svg:g>
-          }
-        </svg:g>
-      }
-      
-      <!-- Content area -->
-      <svg:g 
-        class="svg-panel-content"
-        [attr.transform]="contentTransform"
-      >
-        <ng-content></ng-content>
-      </svg:g>
-    </svg:g>
-  `,
+  templateUrl: './svg-panel.component.html',
   styleUrl: './svg-panel.component.css'
 })
 export class SvgPanelComponent {

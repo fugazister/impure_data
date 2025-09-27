@@ -5,11 +5,7 @@ import { CommonModule } from '@angular/common';
   selector: 'ui-panel-content',
   standalone: true,
   imports: [CommonModule],
-  template: `
-    <svg:g class="ui-panel-content" [attr.transform]="'translate(' + x + ', ' + y + ')'">
-      <ng-content></ng-content>
-    </svg:g>
-  `
+  templateUrl: './ui-panel-content.component.html'
 })
 export class UiPanelContentComponent {
   @Input() x: number = 0;

@@ -1,20 +1,12 @@
 import { Component, Input, Output, EventEmitter, ContentChild, TemplateRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SvgPanelComponent } from './svg-panel.component';
+import { SvgPanelComponent } from '../svg-panel/svg-panel.component';
 
 @Component({
   selector: 'ui-panel',
   standalone: true,
   imports: [CommonModule, SvgPanelComponent],
-  template: `
-    <svg:g svg-panel
-      [width]="width"
-      [height]="height"
-      [position]="position"
-      [variant]="variant">
-      <ng-content></ng-content>
-    </svg:g>
-  `
+  templateUrl: './ui-panel.component.html'
 })
 export class UiPanelComponent {
   @Input() width: number = 200;

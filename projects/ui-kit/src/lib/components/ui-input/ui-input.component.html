@@ -1,0 +1,12 @@
+<svg:g svg-input
+  [size]="size"
+  [variant]="variant"
+  [position]="position"
+  [width]="width"
+  [placeholder]="placeholder"
+  [disabled]="disabled"
+  [ngModel]="value"
+  (ngModelChange)="onValueChange($event)"
+  (onEnter)="onEnter.emit($event)"
+  (onEscape)="onEscape.emit()">
+</svg:g>
