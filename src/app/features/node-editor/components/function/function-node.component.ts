@@ -3,8 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { BaseNodeComponent } from '../base/base-node.component';
 import { NodeWrapperComponent } from '../wrapper/node-wrapper.component';
-import { Node } from '../../../../core';
-import { NodeTypeLibrary } from '../../../node-palette/node-library.service';
 import { SvgInputComponent, SvgButtonComponent } from 'ui-kit';
 
 @Component({
