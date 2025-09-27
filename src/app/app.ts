@@ -69,6 +69,9 @@ export class App {
     console.log('    debugDataCurrent() - Get current session data');
     console.log('  Utility:');
     console.log('    debugClear() - Clear all debug sessions');
+
+    // Start initial debug session to capture debug data even in edit mode
+    this.startInitialDebugSession();
   }
   
   protected readonly title = signal('Impure Data - Visual JavaScript Editor');
@@ -113,6 +116,13 @@ export class App {
 
   protected toggleMode(): void {
     console.log('toggleMode() called, current mode:', this.nodeEditorService.currentMode());
+    
+    // End current debug session before mode switch
+    const currentSession = this.debugService.endSession();
+    if (currentSession) {
+      console.log('🐛 Ended debug session for mode switch:', currentSession.id);
+    }
+    
     this.nodeEditorService.toggleMode();
     console.log('After toggle, new mode:', this.nodeEditorService.currentMode());
     
@@ -127,6 +137,8 @@ export class App {
     } else {
       console.log('Switched to edit mode');
       this.forceShowPanel.set(false);
+      // Start a new debug session for edit mode
+      this.startInitialDebugSession();
     }
   }
 
@@ -134,7 +146,7 @@ export class App {
     const nodes = this.nodeEditorService.nodes();
     const connections = this.nodeEditorService.connections();
     
-    // Start debug session
+    // Start debug session for execution mode (session should have been ended in toggleMode)
     const sessionId = this.debugService.startSession({
       nodeCount: nodes.length,
       connectionCount: connections.length,
@@ -197,6 +209,21 @@ export class App {
         console.log('='.repeat(80) + '\n');
       }
     }
+  }
+
+  private startInitialDebugSession(): void {
+    const nodes = this.nodeEditorService.nodes();
+    const connections = this.nodeEditorService.connections();
+    
+    // Start initial debug session for edit mode
+    const sessionId = this.debugService.startSession({
+      nodeCount: nodes.length,
+      connectionCount: connections.length,
+      executionMode: 'edit'
+    });
+
+    this.debugService.log('App', 'Initial debug session started - capturing data in edit mode');
+    this.debugService.log('App', `Initialized with ${nodes.length} nodes and ${connections.length} connections`);
   }
 
   protected shouldShowCodePanel(): boolean {

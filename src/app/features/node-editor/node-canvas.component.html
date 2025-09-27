@@ -62,6 +62,7 @@
       @for (node of nodes(); track node.id) {
         <g 
           class="node"
+          [class]="'node-type-' + node.type.replace('.', '-')"
           [class.selected]="selectedNode()?.id === node.id"
           [class.editing]="editingNodeId() === node.id"
           [class.execution-mode]="!nodeEditor.isEditMode()"
@@ -215,24 +216,17 @@
               <!-- Function name area (left side, leftmost edge) -->
               <g class="function-name-area" transform="translate(8, 8)">
                 @if (editingFunctionName() === node.id) {
-                  <foreignObject 
-                    x="0" 
-                    y="0"
-                    [attr.width]="getFunctionNameWidth(node)" 
-                    height="24"
-                    style="pointer-events: all;"
-                  >
-                    <input
-                      class="function-name-input editing"
-                      [value]="node.functionName || ''"
-                      (input)="onFunctionNameChange($event, node.id)"
-                      (blur)="onFunctionNameEditEnd()"
-                      (keydown)="onFunctionNameKeyDown($event)"
-                      placeholder="Function name"
-                      style="width: 100%; background: rgba(255,255,255,0.9); border: 1px solid #007acc; border-radius: 3px; padding: 4px; font-family: monospace; font-size: 11px;"
-                      autofocus
-                    />
-                  </foreignObject>
+                  <g svg-input
+                    size="medium"
+                    variant="primary"
+                    [position]="{ x: 0, y: 0 }"
+                    [width]="getFunctionNameWidth(node)"
+                    placeholder="Function name"
+                    [ngModel]="node.functionName || ''"
+                    (ngModelChange)="updateNodeFunctionName(node.id, $event)"
+                    (onEnter)="onFunctionNameEditEnd()"
+                    (onEscape)="onFunctionNameEditEnd()">
+                  </g>
                 } @else {
                   <!-- Function name display background -->
                   <rect

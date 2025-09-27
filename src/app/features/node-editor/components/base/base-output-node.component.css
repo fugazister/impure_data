@@ -8,6 +8,7 @@
   font-family: Arial, sans-serif;
   font-size: 12px;
   font-weight: bold;
+  user-select: none;
 }
 
 .execute-button {
@@ -22,10 +23,12 @@
 .execute-text {
   font-family: Arial, sans-serif;
   font-weight: bold;
+  user-select: none;
 }
 
 .input-value {
   font-family: Arial, sans-serif;
+  user-select: none;
 }
 
 .output-display {
@@ -34,4 +37,5 @@
 
 .output-text {
   font-family: 'Courier New', monospace;
+  user-select: none;
 }

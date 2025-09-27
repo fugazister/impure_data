@@ -46,6 +46,7 @@
 /* Port Styles */
 .port {
   cursor: pointer;
+  user-select: none; /* Prevent text selection during drag operations */
 }
 
 .port-circle {

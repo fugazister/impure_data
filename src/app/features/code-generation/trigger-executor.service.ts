@@ -154,7 +154,14 @@ export class TriggerExecutorService {
 
       // Store result in context for connected nodes
       if (node.outputs.length > 0) {
-        const resultValue = result.output.length > 0 ? result.output[result.output.length - 1] : result.success;
+        // For function nodes, prioritize the actual return value
+        let resultValue = result.success; // Default fallback
+        
+        if (result.output.length > 0) {
+          // Use the last output item (which is the function return value for function nodes)
+          resultValue = result.output[result.output.length - 1];
+        }
+        
         context.variables.set(node.id, resultValue);
         this.debugService.log('TriggerExecutor', `Stored result for ${node.id}:`, resultValue);
       }
@@ -225,6 +232,9 @@ export class TriggerExecutorService {
       // If the function returned something, add it to output
       if (executionResult !== undefined) {
         result.output.push(executionResult);
+        this.debugService.log('TriggerExecutor', `Function returned value:`, executionResult);
+      } else {
+        this.debugService.log('TriggerExecutor', `Function returned undefined`);
       }
       
     } catch (error) {

@@ -1,0 +1,8 @@
+<svg:g svg-button
+  [variant]="variant"
+  [size]="size"
+  [position]="position"
+  [disabled]="disabled"
+  (onClick)="onClick.emit($event)">
+  <ng-content></ng-content>
+</svg:g>

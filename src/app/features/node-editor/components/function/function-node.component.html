@@ -46,22 +46,17 @@
     <!-- Function name area (right side, inline with drag area) -->
     <svg:g class="function-name-area" transform="translate(136, 8)">
       @if (editingFunctionName() === node.id) {
-        <foreignObject 
-          x="0" 
-          y="0"
-          [attr.width]="getFunctionNameWidth()" 
-          height="24"
-        >
-          <input
-            class="function-name-input editing"
-            [value]="node.functionName || ''"
-            (input)="onFunctionNameChange($event)"
-            (blur)="onFunctionNameBlur($event)"
-            (keydown)="onFunctionNameKeyDown($event)"
-            placeholder="Function name"
-            autofocus
-          />
-        </foreignObject>
+        <svg:g svg-input
+          size="medium"
+          variant="default"
+          [position]="{ x: 0, y: 0 }"
+          [width]="getFunctionNameWidth()"
+          placeholder="Function name"
+          [ngModel]="node.functionName || ''"
+          (ngModelChange)="updateFunctionName($event)"
+          (onEnter)="finishFunctionNameEdit()"
+          (onEscape)="cancelFunctionNameEdit()">
+        </svg:g>
       } @else {
         <!-- Function name display background -->
         <svg:rect
@@ -100,51 +95,21 @@
     <!-- Control buttons area (right edge) -->
     <svg:g class="control-buttons" [attr.transform]="'translate(' + (getWidth() - 50) + ', 8)'">
       <!-- Edit function name button -->
-      <svg:g 
-        class="edit-name-btn"
-        transform="translate(0, 0)"
-        (click)="toggleFunctionNameEdit()"
-      >
-        <svg:rect
-          class="button-bg"
-          x="0"
-          y="0"
-          width="18"
-          height="18"
-          rx="3"
-        />
-        <svg:text
-          class="button-icon"
-          x="9"
-          y="12"
-          text-anchor="middle"
-        >
-          ✏️
-        </svg:text>
+      <svg:g svg-button
+        variant="ghost"
+        size="xs"
+        [position]="{ x: 0, y: 0 }"
+        (onClick)="toggleFunctionNameEdit()">
+        ✏️
       </svg:g>
       
       <!-- Edit arguments button -->
-      <svg:g 
-        class="edit-args-btn"
-        transform="translate(25, 0)"
-        (click)="toggleArgumentsEdit()"
-      >
-        <svg:rect
-          class="button-bg"
-          x="0"
-          y="0"
-          width="18"
-          height="18"
-          rx="3"
-        />
-        <svg:text
-          class="button-icon"
-          x="9"
-          y="12"
-          text-anchor="middle"
-        >
-          ⚙️
-        </svg:text>
+      <svg:g svg-button
+        variant="ghost"
+        size="xs"
+        [position]="{ x: 25, y: 0 }"
+        (onClick)="toggleArgumentsEdit()">
+        ⚙️
       </svg:g>
     </svg:g>
   </svg:g>

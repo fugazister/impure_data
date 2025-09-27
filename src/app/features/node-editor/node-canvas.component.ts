@@ -1,13 +1,15 @@
 import { Component, ElementRef, ViewChild, AfterViewInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { NodeEditorService } from './node-editor.service';
 import { NodeTypeLibrary } from '../node-palette/node-library.service';
 import { Node, Connection, Position } from '../../core';
+import { SvgInputComponent, SvgButtonComponent } from 'ui-kit';
 
 @Component({
   selector: 'app-node-canvas',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule, SvgInputComponent],
   templateUrl: './node-canvas.component.html',
   styleUrl: './node-canvas.component.css'
 })
@@ -709,6 +711,10 @@ export class NodeCanvasComponent implements AfterViewInit {
     this.nodeEditor.updateNode(nodeId, { functionName: input.value });
   }
 
+  updateNodeFunctionName(nodeId: string, functionName: string): void {
+    this.nodeEditor.updateNode(nodeId, { functionName });
+  }
+
   onFunctionNameBlur(event: FocusEvent): void {
     console.log('onFunctionNameBlur called, current editing node:', this.editingNodeId());
     
@@ -951,6 +957,7 @@ export class NodeCanvasComponent implements AfterViewInit {
   // Port events
   onPortMouseDown(event: MouseEvent, nodeId: string, portId: string, portType: 'input' | 'output') {
     event.stopPropagation();
+    event.preventDefault(); // Prevent text selection during drag operations
     
     if (portType === 'output') {
       const svgRect = this.canvasSvg.nativeElement.getBoundingClientRect();
@@ -970,6 +977,7 @@ export class NodeCanvasComponent implements AfterViewInit {
 
   onPortMouseUp(event: MouseEvent, nodeId: string, portId: string, portType: 'input' | 'output') {
     event.stopPropagation();
+    event.preventDefault(); // Prevent text selection during drag operations
     
     const dragConn = this.dragConnection();
     if (dragConn && portType === 'input') {

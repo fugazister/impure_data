@@ -1,0 +1,91 @@
+<!-- Background -->
+<svg:rect
+  class="ui-textarea-bg"
+  x="0"
+  y="0"
+  [attr.width]="width"
+  [attr.height]="height"
+  rx="4"
+  ry="4"
+  [attr.fill]="backgroundColor"
+  [attr.stroke]="borderColor"
+  [attr.stroke-width]="borderWidth"
+  (click)="focusTextarea()"
+/>
+
+<!-- Text display area with clipping -->
+<svg:defs>
+  <svg:clipPath [id]="'textarea-clip-' + componentId">
+    <svg:rect
+      x="8"
+      y="8"
+      [attr.width]="width - 16"
+      [attr.height]="height - 16"
+    />
+  </svg:clipPath>
+</svg:defs>
+
+<!-- Multi-line text display -->
+<svg:g [attr.clip-path]="'url(#textarea-clip-' + componentId + ')'">
+  @for (line of displayLines; track $index; let i = $index) {
+    <svg:text
+      class="ui-textarea-line"
+      x="12"
+      [attr.y]="20 + i * lineHeight"
+      fill="white"
+      font-family="JetBrains Mono, Fira Code, Monaco, Consolas, monospace"
+      font-size="12"
+      [class.cursor-line]="i === cursorLine && isFocused">
+      {{ line }}
+    </svg:text>
+  }
+  
+  <!-- Cursor -->
+  @if (isFocused) {
+    <svg:line
+      class="ui-textarea-cursor"
+      [attr.x1]="cursorX"
+      [attr.y1]="cursorY1"
+      [attr.x2]="cursorX"
+      [attr.y2]="cursorY2"
+      stroke="white"
+      stroke-width="1">
+    </svg:line>
+  }
+</svg:g>
+
+<!-- Hidden textarea for actual input -->
+<foreignObject 
+  x="0" 
+  y="0"
+  [attr.width]="width" 
+  [attr.height]="height"
+  style="pointer-events: none;">
+  <textarea
+    #hiddenTextarea
+    class="ui-textarea-hidden"
+    [value]="value"
+    [disabled]="disabled"
+    [placeholder]="placeholder"
+    (input)="onInput($event)"
+    (focus)="onFocus()"
+    (blur)="onBlur()"
+    (keydown)="onKeydown($event)"
+    [style.width]="width + 'px'"
+    [style.height]="height + 'px'"
+    style="
+      opacity: 0;
+      position: absolute;
+      background: transparent;
+      border: none;
+      outline: none;
+      resize: none;
+      color: transparent;
+      font-family: JetBrains Mono, Fira Code, Monaco, Consolas, monospace;
+      font-size: 12px;
+      line-height: 16px;
+      padding: 8px 12px;
+      pointer-events: all;
+    "
+  ></textarea>
+</foreignObject>

@@ -1,14 +1,16 @@
 import { Component, Input, Output, EventEmitter, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { BaseNodeComponent } from '../base/base-node.component';
 import { NodeWrapperComponent } from '../wrapper/node-wrapper.component';
 import { Node } from '../../../../core';
 import { NodeTypeLibrary } from '../../../node-palette/node-library.service';
+import { SvgInputComponent, SvgButtonComponent } from 'ui-kit';
 
 @Component({
   selector: 'app-function-node',
   standalone: true,
-  imports: [CommonModule, NodeWrapperComponent],
+  imports: [CommonModule, FormsModule, NodeWrapperComponent, SvgInputComponent, SvgButtonComponent],
   templateUrl: './function-node.component.html',
   styleUrl: './function-node.component.css'
 })
@@ -104,6 +106,18 @@ export class FunctionNodeComponent extends BaseNodeComponent {
   onFunctionNameChange(event: Event): void {
     const target = event.target as HTMLInputElement;
     this.functionNameChange.emit({ nodeId: this.node.id, name: target.value });
+  }
+
+  updateFunctionName(name: string): void {
+    this.functionNameChange.emit({ nodeId: this.node.id, name });
+  }
+
+  finishFunctionNameEdit(): void {
+    this.editingFunctionName.set(null);
+  }
+
+  cancelFunctionNameEdit(): void {
+    this.editingFunctionName.set(null);
   }
 
   onFunctionNameBlur(event: FocusEvent): void {

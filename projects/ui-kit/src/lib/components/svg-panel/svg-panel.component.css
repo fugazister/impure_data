@@ -1,0 +1,62 @@
+.svg-panel {
+  user-select: none;
+}
+
+.svg-panel-bg {
+  transition: all 0.2s ease;
+}
+
+/* Header styles handled by component logic */
+
+.svg-panel-header-bg {
+  opacity: 0.1;
+}
+
+.svg-panel-title {
+  font-family: var(--svg-font-family, 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif);
+  font-weight: 600;
+  pointer-events: none;
+}
+
+.svg-panel-close-button {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.svg-panel-close-button:hover circle {
+  fill: #FF4444;
+  stroke: #CC0000;
+}
+
+.svg-panel-close-button:hover line {
+  stroke: white;
+}
+
+/* Content positioning handled by component */
+
+/* Variant styles */
+.svg-panel--primary .svg-panel-bg {
+  stroke: var(--svg-primary-color, #007ACC);
+}
+
+.svg-panel--success .svg-panel-bg {
+  stroke: var(--svg-success-color, #4CAF50);
+}
+
+.svg-panel--warning .svg-panel-bg {
+  stroke: var(--svg-warning-color, #FF9800);
+}
+
+.svg-panel--danger .svg-panel-bg {
+  stroke: var(--svg-danger-color, #F44336);
+}
+
+/* Shadow effect */
+.svg-panel--shadow .svg-panel-bg {
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.15));
+}
+
+/* Hover effects */
+.svg-panel:hover .svg-panel-bg {
+  filter: drop-shadow(0 4px 12px rgba(0, 0, 0, 0.2));
+}
