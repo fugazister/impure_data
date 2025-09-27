@@ -1,6 +1,7 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Node, Connection, Project, Position } from '../../core';
 import { NodeTypeLibrary } from '../node-palette/node-library.service';
+import { DebugService } from '../../core/debug.service';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +33,8 @@ export class NodeEditorService {
   readonly selectedNode = signal<Node | null>(null);
   readonly currentMode = this.editorMode.asReadonly();
 
+  private debugService = inject(DebugService);
+
   constructor() {
     NodeTypeLibrary.initialize();
   }
@@ -61,6 +64,15 @@ export class NodeEditorService {
     const currentNodes = this.nodes();
     this.nodes.set([...currentNodes, node]);
     this.updateProject();
+    
+    // Debug log
+    this.debugService.log('NodeEditor', `Added node: ${typeId} (${node.id}) at position (${position.x}, ${position.y})`, { 
+      nodeType: typeId, 
+      nodeId: node.id, 
+      position,
+      totalNodes: currentNodes.length + 1 
+    });
+    
     return node;
   }
 
@@ -105,6 +117,13 @@ export class NodeEditorService {
     );
     this.nodes.set(updatedNodes);
     this.updateProject();
+    
+    // Debug log
+    this.debugService.log('NodeEditor', `Updated node: ${nodeId}`, { 
+      nodeId, 
+      updates,
+      timestamp: Date.now() 
+    });
   }
 
   // Connection operations
@@ -132,6 +151,17 @@ export class NodeEditorService {
     const currentConnections = this.connections();
     this.connections.set([...currentConnections, connection]);
     this.updateProject();
+    
+    // Debug log
+    this.debugService.log('NodeEditor', `Added connection: ${fromNodeId}.${fromPortId} -> ${toNodeId}.${toPortId}`, { 
+      connectionId: connection.id,
+      fromNodeId, 
+      fromPortId, 
+      toNodeId, 
+      toPortId,
+      totalConnections: currentConnections.length + 1 
+    });
+    
     return connection;
   }
 

@@ -1,0 +1,37 @@
+/* UI Port Component Styles */
+
+.ui-port {
+  cursor: pointer;
+}
+
+.ui-port .port-circle {
+  transition: all 0.15s ease;
+}
+
+.ui-port:hover .port-circle {
+  transform: scale(1.2);
+}
+
+/* Input and output port specific styles can be added here when needed */
+
+.ui-port--highlighted .port-circle {
+  filter: drop-shadow(0 0 4px rgba(255, 152, 0, 0.6));
+}
+
+.ui-port--dragging .port-circle {
+  filter: drop-shadow(0 0 4px rgba(76, 175, 80, 0.6));
+}
+
+/* Connected port styling can be added here when needed */
+
+.port-label {
+  font-size: 10px;
+  font-family: Arial, sans-serif;
+  user-select: none;
+  pointer-events: none;
+}
+
+.connection-warning {
+  fill: #FF9800;
+  font-size: 9px;
+}

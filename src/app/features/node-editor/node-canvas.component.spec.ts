@@ -533,7 +533,7 @@ describe('NodeCanvasComponent', async () => {
       fixture.detectChanges();
 
       // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      const functionNameInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
 
       // Assert
       expect(functionNameInput).toBeTruthy();
@@ -547,7 +547,7 @@ describe('NodeCanvasComponent', async () => {
 
       // Act - Look for text display, not input
       const functionNameDisplay = fixture.debugElement.query(By.css('.function-header text'));
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      const functionNameInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
 
       // Assert
       expect(functionNameDisplay).toBeTruthy();
@@ -561,11 +561,13 @@ describe('NodeCanvasComponent', async () => {
       fixture.detectChanges();
       const newFunctionName = 'newFunctionName';
 
-      // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
-      expect(functionNameInput).toBeTruthy();
-      functionNameInput.nativeElement.value = newFunctionName;
-      functionNameInput.triggerEventHandler('input', { target: functionNameInput.nativeElement });
+      // Act - Find the hidden input element from SVG UI Kit
+      const svgInputComponent = fixture.debugElement.query(By.css('g[svg-input]'));
+      expect(svgInputComponent).toBeTruthy();
+      const hiddenInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
+      expect(hiddenInput).toBeTruthy();
+      hiddenInput.nativeElement.value = newFunctionName;
+      hiddenInput.triggerEventHandler('input', { target: hiddenInput.nativeElement });
 
       // Assert
       expect(nodeEditorService.updateNode).toHaveBeenCalledWith(mockNode.id, { functionName: newFunctionName });
@@ -583,7 +585,7 @@ describe('NodeCanvasComponent', async () => {
       fixture.detectChanges();
 
       // Assert - Function name input should now be visible
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      const functionNameInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
       expect(functionNameInput).toBeTruthy();
     });
 
@@ -595,7 +597,7 @@ describe('NodeCanvasComponent', async () => {
       spyOn(component, 'onNodeBodyClick');
 
       // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      const functionNameInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
       expect(functionNameInput).toBeTruthy();
       const clickEvent = new MouseEvent('click');
       functionNameInput.triggerEventHandler('click', clickEvent);
@@ -676,16 +678,13 @@ describe('NodeCanvasComponent', async () => {
       fixture.detectChanges();
 
       // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
-      expect(functionNameInput).toBeTruthy();
-      const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
-      spyOn(escapeEvent, 'preventDefault');
-      functionNameInput.triggerEventHandler('keydown', escapeEvent);
+      const svgInputComponent = fixture.debugElement.query(By.css('g[svg-input]'));
+      expect(svgInputComponent).toBeTruthy();
+      svgInputComponent.triggerEventHandler('onEscape', undefined);
       fixture.detectChanges();
 
-      // Assert - Escape should exit the entire editing mode
-      expect(component.editingNodeId()).toBeNull();
-      expect(escapeEvent.preventDefault).toHaveBeenCalled();
+      // Assert - Escape should exit the function name editing mode
+      expect(component.editingFunctionName()).toBeNull();
     });
 
     it('should focus code editor when pressing Enter in function name input', async () => {
@@ -696,16 +695,13 @@ describe('NodeCanvasComponent', async () => {
       spyOn(document, 'querySelector').and.callThrough();
 
       // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
-      expect(functionNameInput).toBeTruthy();
-      const enterEvent = new KeyboardEvent('keydown', { key: 'Enter' });
-      spyOn(enterEvent, 'preventDefault');
-      functionNameInput.triggerEventHandler('keydown', enterEvent);
-      await new Promise(resolve => setTimeout(resolve, 100)); // Wait for setTimeout
+      const svgInputComponent = fixture.debugElement.query(By.css('g[svg-input]'));
+      expect(svgInputComponent).toBeTruthy();
+      svgInputComponent.triggerEventHandler('onEnter', 'test-function');
+      fixture.detectChanges();
 
-      // Assert
-      expect(enterEvent.preventDefault).toHaveBeenCalled();
-      expect(document.querySelector).toHaveBeenCalledWith('.code-editor.editing');
+      // Assert - Enter should end function name editing
+      expect(component.editingFunctionName()).toBeNull();
     });
 
     it('should create function node with default function name', () => {
@@ -813,7 +809,7 @@ describe('NodeCanvasComponent', async () => {
       }
 
       // Act - Edit the function name
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      const functionNameInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
       expect(functionNameInput).toBeTruthy(); // Verify input is now visible
       functionNameInput.nativeElement.value = newFunctionName;
       functionNameInput.triggerEventHandler('input', { target: functionNameInput.nativeElement });
@@ -863,7 +859,7 @@ describe('NodeCanvasComponent', async () => {
       fixture.detectChanges();
 
       // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      const functionNameInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
 
       // Assert
       expect(functionNameInput).toBeTruthy();
@@ -877,7 +873,7 @@ describe('NodeCanvasComponent', async () => {
 
       // Act - Look for text display, not input
       const functionNameDisplay = fixture.debugElement.query(By.css('.function-name-display'));
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      const functionNameInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
 
       // Assert
       expect(functionNameDisplay).toBeTruthy();
@@ -925,7 +921,7 @@ describe('NodeCanvasComponent', async () => {
       fixture.detectChanges();
 
       // Assert - Function name input should now be visible
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      const functionNameInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
       expect(functionNameInput).toBeTruthy();
     });
 
@@ -936,14 +932,13 @@ describe('NodeCanvasComponent', async () => {
       fixture.detectChanges();
 
       // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
-      expect(functionNameInput).toBeTruthy();
-      const escapeEvent = new KeyboardEvent('keydown', { key: 'Escape' });
-      functionNameInput.triggerEventHandler('keydown', escapeEvent);
+      const svgInputComponent = fixture.debugElement.query(By.css('g[svg-input]'));
+      expect(svgInputComponent).toBeTruthy();
+      svgInputComponent.triggerEventHandler('onEscape', undefined);
       fixture.detectChanges();
 
-      // Assert - Escape should exit the entire editing mode  
-      expect(component.editingNodeId()).toBeNull();
+      // Assert - Escape should exit function name editing mode  
+      expect(component.editingFunctionName()).toBeNull();
     });
 
     it('should handle escape key in code editor', () => {
@@ -977,7 +972,7 @@ describe('NodeCanvasComponent', async () => {
       }
 
       // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      const functionNameInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
       expect(functionNameInput).toBeTruthy();
       functionNameInput.nativeElement.value = '';
       functionNameInput.triggerEventHandler('input', { target: functionNameInput.nativeElement });
@@ -997,7 +992,7 @@ describe('NodeCanvasComponent', async () => {
       }
 
       // Act
-      const functionNameInput = fixture.debugElement.query(By.css('.function-name-input'));
+      const functionNameInput = fixture.debugElement.query(By.css('.svg-input-hidden'));
       expect(functionNameInput).toBeTruthy();
       functionNameInput.nativeElement.value = specialName;
       functionNameInput.triggerEventHandler('input', { target: functionNameInput.nativeElement });

@@ -1,0 +1,98 @@
+<svg:g 
+  class="enhanced-node"
+  [class]="'node-type-' + node.type.replace('.', '-')"
+  [class.selected]="isSelected"
+  [class.editing]="isEditing"
+  [class.execution-mode]="!isEditMode"
+  [attr.transform]="'translate(' + node.position.x + ',' + node.position.y + ')'"
+  (contextmenu)="onNodeRightClick($event)"
+>
+  <!-- Node background with improved styling -->
+  <svg:rect
+    class="enhanced-node-background"
+    [attr.width]="width"
+    [attr.height]="height"
+    [attr.fill]="backgroundColor"
+    rx="6"
+    ry="6"
+    stroke="#333"
+    stroke-width="1"
+  />
+  
+  <!-- Selection indicator -->
+  @if (isSelected) {
+    <svg:rect
+      class="selection-indicator"
+      [attr.width]="width + 4"
+      [attr.height]="height + 4"
+      x="-2"
+      y="-2"
+      rx="8"
+      ry="8"
+      fill="none"
+      stroke="#007acc"
+      stroke-width="2"
+      stroke-dasharray="4,2"
+    />
+  }
+  
+  <!-- Custom node content slot -->
+  <ng-content></ng-content>
+  
+  <!-- Enhanced move handle -->
+  <svg:g class="move-handle" [attr.transform]="'translate(' + (width - 30) + ', 8)'">
+    <svg:rect
+      class="move-handle-bg"
+      x="0"
+      y="0"
+      width="24"
+      height="16"
+      rx="3"
+      ry="3"
+      fill="rgba(0,0,0,0.1)"
+    />
+    <svg:text
+      class="move-handle-icon"
+      x="12"
+      y="12"
+      text-anchor="middle"
+      font-size="10"
+      fill="#666"
+    >
+      ⋮⋮
+    </svg:text>
+  </svg:g>
+  
+  <!-- Input ports using UI Kit -->
+  @for (input of (node.inputs || []); track input.id; let i = $index) {
+    <ui-port
+      [portId]="input.id"
+      type="input"
+      [state]="getPortState(input.id, 'input')"
+      [position]="{ x: 0, y: getPortY(i) }"
+      [label]="input.label"
+      [connected]="isPortConnected(input.id, 'input')"
+      [showConnectionWarning]="node.type === 'function' && (node.inputs || []).length > 1"
+      (onMouseDown)="onPortMouseDown($event)"
+      (onMouseUp)="onPortMouseUp($event)"
+      (onMouseEnter)="onPortMouseEnter($event)"
+      (onMouseLeave)="onPortMouseLeave($event)"
+    />
+  }
+  
+  <!-- Output ports using UI Kit -->
+  @for (output of (node.outputs || []); track output.id; let i = $index) {
+    <ui-port
+      [portId]="output.id"
+      type="output"
+      [state]="getPortState(output.id, 'output')"
+      [position]="{ x: width, y: getPortY(i) }"
+      [label]="output.label"
+      [connected]="isPortConnected(output.id, 'output')"
+      (onMouseDown)="onPortMouseDown($event)"
+      (onMouseUp)="onPortMouseUp($event)"
+      (onMouseEnter)="onPortMouseEnter($event)"
+      (onMouseLeave)="onPortMouseLeave($event)"
+    />
+  }
+</svg:g>

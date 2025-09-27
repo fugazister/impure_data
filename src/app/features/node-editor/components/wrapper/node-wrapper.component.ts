@@ -1,6 +1,7 @@
 import { Component, Input, Output, EventEmitter, TemplateRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Node } from '../../../../core';
+import { SvgPanelComponent, SvgPortComponent } from '../../../../shared/svg-ui';
 
 /**
  * Common node wrapper component that provides the shared SVG structure
@@ -9,7 +10,7 @@ import { Node } from '../../../../core';
 @Component({
   selector: 'app-node-wrapper',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SvgPortComponent],
   templateUrl: './node-wrapper.component.html',
   styleUrl: './node-wrapper.component.css'
 })
@@ -35,10 +36,12 @@ export class NodeWrapperComponent {
   }
 
   onPortMouseDown(event: MouseEvent, portId: string, portType: 'input' | 'output'): void {
+    event.preventDefault(); // Prevent text selection during drag operations
     this.portMouseDown.emit({ event, portId, portType });
   }
 
   onPortMouseUp(event: MouseEvent, portId: string, portType: 'input' | 'output'): void {
+    event.preventDefault(); // Prevent text selection during drag operations
     this.portMouseUp.emit({ event, portId, portType });
   }
 
@@ -47,15 +50,5 @@ export class NodeWrapperComponent {
     return false; // Placeholder
   }
 
-  getInputPortFill(input: any): string {
-    return this.isPortConnected(input.id, 'input') ? '#007acc' : '#ccc';
-  }
-
-  getInputPortStroke(): string {
-    return '#333';
-  }
-
-  getInputPortTextColor(): string {
-    return '#333';
-  }
+  // Port styling is now handled by SVG UI Kit components
 }

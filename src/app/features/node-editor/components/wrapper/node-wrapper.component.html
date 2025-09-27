@@ -1,5 +1,6 @@
 <svg:g 
   class="node"
+  [class]="'node-type-' + node.type.replace('.', '-')"
   [class.selected]="isSelected"
   [class.editing]="isEditing"
   [class.execution-mode]="!isEditMode"
@@ -28,53 +29,30 @@
     ⋮⋮
   </svg:text>
   
-  <!-- Input ports -->
+  <!-- Input ports using SVG UI Kit -->
   @for (input of (node.inputs || []); track input.id; let i = $index) {
-    <svg:g class="port input-port" [attr.transform]="'translate(0,' + getPortY(i) + ')'">
-      <svg:circle
-        class="port-circle input-port-circle"
-        [attr.cx]="0"
-        [attr.cy]="0"
-        r="4"
-        [attr.fill]="getInputPortFill(input)"
-        [attr.stroke]="getInputPortStroke()"
-        (mousedown)="onPortMouseDown($event, input.id, 'input')"
-        (mouseup)="onPortMouseUp($event, input.id, 'input')"
-      />
-      <svg:text
-        class="port-label input-port-label"
-        x="8"
-        y="3"
-        [attr.fill]="getInputPortTextColor()"
-      >
-        {{ input.label }}
-        @if (node.type === 'function' && (node.inputs || []).length > 1) {
-          <svg:tspan class="no-connections-warning"> (no connections)</svg:tspan>
-        }
-      </svg:text>
+    <svg:g svg-port
+      [portId]="input.id"
+      type="input"
+      [position]="{ x: 0, y: getPortY(i) }"
+      [label]="input.label"
+      [connected]="isPortConnected(input.id, 'input')"
+      [showConnectionWarning]="node.type === 'function' && (node.inputs || []).length > 1"
+      (onMouseDown)="onPortMouseDown($event.event, $event.portId, $event.portType)"
+      (onMouseUp)="onPortMouseUp($event.event, $event.portId, $event.portType)">
     </svg:g>
   }
   
-  <!-- Output ports -->
+  <!-- Output ports using SVG UI Kit -->
   @for (output of (node.outputs || []); track output.id; let i = $index) {
-    <svg:g class="port output-port" [attr.transform]="'translate(' + width + ',' + getPortY(i) + ')'">
-      <svg:circle
-        class="port-circle output-port-circle"
-        [attr.cx]="0"
-        [attr.cy]="0"
-        r="4"
-        [attr.fill]="isPortConnected(output.id, 'output') ? '#007acc' : '#ccc'"
-        (mousedown)="onPortMouseDown($event, output.id, 'output')"
-        (mouseup)="onPortMouseUp($event, output.id, 'output')"
-      />
-      <svg:text
-        class="port-label output-port-label"
-        [attr.x]="-8"
-        y="3"
-        text-anchor="end"
-      >
-        {{ output.label }}
-      </svg:text>
+    <svg:g svg-port
+      [portId]="output.id"
+      type="output"
+      [position]="{ x: width, y: getPortY(i) }"
+      [label]="output.label"
+      [connected]="isPortConnected(output.id, 'output')"
+      (onMouseDown)="onPortMouseDown($event.event, $event.portId, $event.portType)"
+      (onMouseUp)="onPortMouseUp($event.event, $event.portId, $event.portType)">
     </svg:g>
   }
 </svg:g>

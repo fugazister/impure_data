@@ -1,0 +1,69 @@
+/* Enhanced Node Wrapper Styles */
+
+.enhanced-node {
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.enhanced-node:hover {
+  transform: translateY(-1px);
+}
+
+.enhanced-node-background {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+  transition: all 0.2s ease;
+}
+
+.enhanced-node.selected .enhanced-node-background {
+  filter: drop-shadow(0 4px 8px rgba(0, 122, 204, 0.3));
+}
+
+.enhanced-node.editing .enhanced-node-background {
+  stroke: #4CAF50;
+  stroke-width: 2;
+}
+
+.enhanced-node.execution-mode {
+  opacity: 0.8;
+}
+
+.enhanced-node.execution-mode .enhanced-node-background {
+  stroke: #FF9800;
+}
+
+.selection-indicator {
+  animation: selection-pulse 2s ease-in-out infinite;
+}
+
+@keyframes selection-pulse {
+  0%, 100% { 
+    opacity: 1;
+    stroke-dashoffset: 0;
+  }
+  50% { 
+    opacity: 0.7;
+    stroke-dashoffset: 6;
+  }
+}
+
+.move-handle {
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.enhanced-node:hover .move-handle {
+  opacity: 1;
+}
+
+.move-handle-bg {
+  transition: all 0.15s ease;
+}
+
+.move-handle:hover .move-handle-bg {
+  fill: rgba(0, 122, 204, 0.2);
+}
+
+.move-handle-icon {
+  pointer-events: none;
+  user-select: none;
+}
